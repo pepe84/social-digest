@@ -52,7 +52,7 @@ class Service
     // Twitter API v1.0 (deprecated!)
     // https://dev.twitter.com/docs/api/1/get/search
     $query = Http::createQuery(array(
-      'q'           => urlencode($search), // use "to:ECoordinacio"?
+      'q'           => $search, // use "to:ECoordinacio"?
       'result_type' => $type,
       'count'       => $max,
     ));
@@ -84,7 +84,7 @@ class Service
     // http://dev.bitly.com/links.html#v3_shorten
     $query = Http::createQuery(array(
       'access_token'  => Config::get('services.bitly.apiKey'),
-      'longUrl'       => urlencode($url)
+      'longUrl'       => $url
     ));
     
     $api = Config::get('services.bitly.endpoint') . '/shorten' . $query;

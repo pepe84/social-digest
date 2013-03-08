@@ -13,7 +13,7 @@ try {
   
   require_once 'lib/App.php';
   new App(parse_ini_file('conf/app.ini'));
-
+  
   /** 
    * Execution
    */
@@ -84,8 +84,9 @@ try {
         $statusUrl = App::conf('services.twitter.urls.status');
         $statusUrl = str_replace($search, $replac, $statusUrl);
         $date = App::view()->renderLink($statusUrl, App::utils()->getDateStr($tw->created_at));
+        $text = App::view()->renderTweet($tw->text);
         // Add result
-        $results[TYPE_TWEET][] = "[$user][$date] {$tw->text}";
+        $results[TYPE_TWEET][] = "[$user][$date] $text";
         if ($count++ === $max) break;
       }
     }        
@@ -129,10 +130,9 @@ try {
   App::log()->debug("TOTAL: " . count($results) . " section/s have updates");
   
   // TODO
-  // 0) Transform Tweet urls
-  // 1) Upload a new post to Wordpress
+  // 1) Upload a new post to Wordpress (http://jetpack.me/support/post-by-email/)
   // 2) Configure Wordpress to send post by mail
-  // 3) Post events on Twitter
+  // 3) Cron to post events on Twitter (future)
   
   /**
    * Render

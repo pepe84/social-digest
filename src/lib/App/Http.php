@@ -8,7 +8,7 @@ class Http
   static public function createQuery($params) 
   {
     array_walk($params, function(&$v, $k){
-      $v = "$k=$v";
+      $v = "$k=" . urlencode($v);
     });
     
     return '?' . implode('&', $params);
@@ -28,5 +28,5 @@ class Http
     }
 
     return null;
-  }
+  }  
 }
