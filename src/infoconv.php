@@ -128,19 +128,18 @@ try {
   // Total
   
   App::log()->debug("TOTAL: " . count($results) . " section/s have updates");
-  
-  // TODO
-  // 1) Upload a new post to Wordpress (http://jetpack.me/support/post-by-email/)
-  // 2) Configure Wordpress to send post by mail
-  // 3) Cron to post events on Twitter (future)
-  
+    
   /**
    * Render
    */
   
+  $main = App::conf('app.title') . " ". date('d/m/Y');
+  $mail  = App::conf('app.output.mail.enabled');
+  $full  = empty($mail) && App::conf('app.output.full');
+  
   // Open tags?
   
-  if (App::conf('app.output.full')) {
+  if ($full) {
     App::output(
       '<html>
         <head>
@@ -156,7 +155,7 @@ try {
   
   App::output(
     "<header>" . PHP_EOL . 
-      "<h1>" . App::conf('app.title') . " ". date('d/m/Y') . "</h1>" . PHP_EOL . 
+      "<h1>" . $main . "</h1>" . PHP_EOL . 
     "</header>" . PHP_EOL
   );
   
@@ -198,16 +197,35 @@ try {
   });
   
   App::output(
-    "<footer>" . App::view()->renderList($credits) . "<footer>"
+    "<footer>" . App::view()->renderList($credits) . "</footer>"
   );
   
   // Close tags?
   
-  if (App::conf('app.output.full')) {
+  if ($full) {
     App::output(
       '  </body>
       </html>'
     );
+  }
+  
+  // Send e-mail?
+  
+  if (!empty($mail)) {
+    // Prepare delivery
+    $to = App::conf('app.output.mail.to');
+    $from = App::conf('app.output.mail.from');
+    $headers = $from ? "From: $from\r\n" . "X-Mailer: php" : "";
+    $append = App::conf('app.output.mail.append') ?: "";
+    // Send e-mail
+    App::log()->debug("Sending mail to $to...");
+    $ok = mail($to, $title, App::output() . $append, $headers);
+    // Success?
+    if ($ok) {
+      App::log()->debug("Message sent ok!");
+    } else {
+      App::log()->debug("Message delivery failed.");
+    }
   }
   
 } catch (Exception $e) {

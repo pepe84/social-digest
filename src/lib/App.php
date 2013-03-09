@@ -18,7 +18,7 @@ class App
     Config::setConfig($config);
     
     // Initialize output file
-    $filename = $config['app.output'];
+    $filename = $config['app.output.file'];
     
     if (!file_exists($filename)) {
       touch($filename);
@@ -47,9 +47,9 @@ class App
   static public function output($str = null)
   {
     if ($str === null) {
-      file_get_contents(self::$_filename);
+      return file_get_contents(self::$_filename);
     } else {
-      file_put_contents(self::$_filename, $str, FILE_APPEND | LOCK_EX);
+      return file_put_contents(self::$_filename, $str, FILE_APPEND | LOCK_EX);
     }
   }
 }
