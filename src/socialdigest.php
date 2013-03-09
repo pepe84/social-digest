@@ -175,7 +175,7 @@ try {
     App::output(
       "<article>"  . PHP_EOL . 
         "<h2>" . ($url ? App::view()->renderLink(App::service()->getBitlyUrl($url), $title) : $title) . "</h2>" . PHP_EOL . 
-        App::view()->renderList($list). PHP_EOL . 
+        App::view()->renderList($list) .
       "</article>" . PHP_EOL
     );
   }
@@ -197,7 +197,7 @@ try {
   });
   
   App::output(
-    "<footer>" . App::view()->renderList($credits) . "</footer>"
+    "<footer>" . PHP_EOL . App::view()->renderList($credits) . "</footer>"
   );
   
   // Close tags?
@@ -214,11 +214,17 @@ try {
   if (!empty($mail)) {
     // Prepare delivery
     $to = App::conf('app.output.mail.to');
-    $from = App::conf('app.output.mail.from');
-    $headers = $from ? "From: $from\r\n" . "X-Mailer: php" : "";
+    $headers = "";
+    foreach (array('from', 'cc', 'bcc') as $add) {
+      $a = App::conf("app.output.mail.$add");
+      if (!empty($a)) {
+        $headers .= ucfirst($add) . ": $a\r\n";
+      }
+    }
+    $headers .= "X-Mailer: php";
     $append = App::conf('app.output.mail.append') ?: "";
     // Send e-mail
-    App::log()->debug("Sending mail to $to...");
+    App::log()->debug("Sending mail to $to");
     $ok = mail($to, $title, App::output() . $append, $headers);
     // Success?
     if ($ok) {
