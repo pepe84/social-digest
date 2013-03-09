@@ -69,7 +69,7 @@ try {
     
     $count = 0;
     $max = App::conf('app.tweets.max');
-    $resp = App::service()->getTweets($tag, $max);
+    $resp = App::service()->getTweets("$tag+exclude:retweets", $max);
     
     if (!empty($resp)) {
       
@@ -128,27 +128,40 @@ try {
   // Total
   
   App::log()->debug("TOTAL: " . count($results) . " section/s have updates");
-  
-  // TODO
-  // 1) Upload a new post to Wordpress (http://jetpack.me/support/post-by-email/)
-  // 2) Configure Wordpress to send post by mail
-  // 3) Cron to post events on Twitter (future)
-  
+    
   /**
    * Render
    */
   
-  // Title
-  App::output("<h1>" . App::conf('app.title') . " ". date('d/m/Y') . "</h1>" . PHP_EOL);
+  $main = App::conf('app.title') . " ". date('d/m/Y');
+  $mail  = App::conf('app.output.mail.enabled');
+  $full  = empty($mail) && App::conf('app.output.full');
   
-  // Credits
-  $credits = App::conf('app.credits');
-  array_walk($credits, function(&$val, $key) {
-    $val = $key . ": " . App::view()->renderLink($val);
-  });
-  App::output(App::view()->renderList($credits));
+  // Open tags?
+  
+  if ($full) {
+    App::output(
+      '<html>
+        <head>
+          <title>' . App::conf('app.title') . '</title>
+          <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+          <meta name="description" content="' . App::conf('app.description') . '" />
+        </head>
+        <body>'
+    );
+  }
+  
+  // Title and credits
+  
+  App::output(
+    "<header>" . PHP_EOL . 
+      "<h1>" . $main . "</h1>" . PHP_EOL . 
+    "</header>" . PHP_EOL
+  );
   
   // Sections
+  
+  App::output("<section>" . PHP_EOL);
   foreach ($results as $type => $list) {
     // Default
     $title = App::conf("app.$type.title");
@@ -160,9 +173,59 @@ try {
     }
     // Render
     App::output(
-      "<h2>" . ($url ? App::view()->renderLink($url, $title) : $title) . "</h2>" . PHP_EOL . 
-      App::view()->renderList($list)
+      "<article>"  . PHP_EOL . 
+        "<h2>" . ($url ? App::view()->renderLink(App::service()->getBitlyUrl($url), $title) : $title) . "</h2>" . PHP_EOL . 
+        App::view()->renderList($list). PHP_EOL . 
+      "</article>" . PHP_EOL
     );
+  }
+  App::output("</section>" . PHP_EOL);
+  
+  // Footer
+  
+  $credits = App::conf('app.credits');
+  
+  array_walk($credits, function(&$val, $key) {
+    // Replace links
+    $val = preg_replace_callback(
+      '/([a-z]+:\/\/){0,1}[a-z0-9-_]+\.[a-z0-9-_:%&~\?\/.=]+/i', 
+      function ($matches) {
+        return App::service()->getBitlyUrl($matches[0]);
+      },
+      $val
+    );
+  });
+  
+  App::output(
+    "<footer>" . App::view()->renderList($credits) . "</footer>"
+  );
+  
+  // Close tags?
+  
+  if ($full) {
+    App::output(
+      '  </body>
+      </html>'
+    );
+  }
+  
+  // Send e-mail?
+  
+  if (!empty($mail)) {
+    // Prepare delivery
+    $to = App::conf('app.output.mail.to');
+    $from = App::conf('app.output.mail.from');
+    $headers = $from ? "From: $from\r\n" . "X-Mailer: php" : "";
+    $append = App::conf('app.output.mail.append') ?: "";
+    // Send e-mail
+    App::log()->debug("Sending mail to $to...");
+    $ok = mail($to, $title, App::output() . $append, $headers);
+    // Success?
+    if ($ok) {
+      App::log()->debug("Message sent ok!");
+    } else {
+      App::log()->debug("Message delivery failed.");
+    }
   }
   
 } catch (Exception $e) {
