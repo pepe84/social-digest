@@ -1,0 +1,22 @@
+#########
+# Blogs #
+#########
+
+blogs:
+
+  # News section 1
+  section1:
+    title: "International news"
+    url: http://www.bbc.co.uk/news/world/
+    max: 100
+    sources:
+      - http://www.bbc.co.uk/
+
+  # News section 2
+  section2:
+    title: "National news"
+    tag: "#uk"
+    sources:
+      - http://www.bbc.co.uk/
+      - http://www.bbc.co.uk/
+      - http://www.bbc.co.uk/

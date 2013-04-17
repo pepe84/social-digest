@@ -1,24 +1,38 @@
 <?php
 
-include_once 'App/Config.php';
-include_once 'App/Http.php';
-include_once 'App/Log.php';
-include_once 'App/Service.php';
-include_once 'App/Utils.php';
-include_once 'App/View.php';
+use Symfony\Component\ClassLoader\UniversalClassLoader;
+use Symfony\Component\Yaml\Yaml;
 
-class App 
+class App
 {
   static protected $_instances = array();
   static protected $_filename = null;
-  
-  public function __construct($config) 
+
+  public function __construct() 
   {
+    // Set paths
+    require_once __DIR__ . '/Symfony/Component/ClassLoader/UniversalClassLoader.php';
+    
+    $loader = new UniversalClassLoader();
+    
+    $loader->registerNamespaces(array(
+        'Symfony' => __DIR__,
+    ));
+    
+    $loader->registerPrefixes(array(
+        'App_'    => __DIR__,
+    ));
+    
+    $loader->register();
+    
     // Set configuration
-    Config::setConfig($config);
+    foreach(array('app', 'blogs', 'calendars') as $cnf) {
+      $config = Yaml::parse(__DIR__ . "/../conf/$cnf.yml");
+      App_Config::setConfig($config);
+    }
     
     // Initialize output file
-    $filename = $config['app.output.file'];
+    $filename = App_Config::get('app.output.file');
     
     if (!file_exists($filename)) {
       touch($filename);
@@ -30,7 +44,7 @@ class App
   
   static public function __callStatic($name, $arguments) 
   {
-    $class = ucfirst($name);
+    $class = "App_" . ucfirst($name);
     
     if (empty(self::$_instances[$class])) {
       self::$_instances[$class] = new $class();
@@ -41,7 +55,7 @@ class App
   
   static public function conf($name)
   {
-    return Config::get($name);
+    return App_Config::get($name);
   }
   
   static public function output($str = null)

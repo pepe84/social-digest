@@ -1,6 +1,6 @@
 <?php
 
-class Http
+class App_Http
 {
   const CONTENT_TYPE_XML  = 'xml';
   const CONTENT_TYPE_JSON = 'json';
