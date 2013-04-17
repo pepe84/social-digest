@@ -1,16 +1,41 @@
 <?php
 
-class Config 
+class App_Config 
 {
   static protected $_config = array();
   
-  static public function setConfig($config)
+  /**
+   *
+   * @param array $config Multi-dimensional array
+   */
+  static public function setConfig(array $config)
   {
-    self::$_config = $config;
+    self::$_config = array_merge(self::$_config, $config);
   }
   
-  static public function get($name) 
+  /**
+   * Retrieve an option (using dots separator for iterative search)
+   * 
+   * @param  string $key
+   * @param  mixed  $default
+   * @return mixed
+   */
+  static public function get($key, $default = null)
   {
-    return isset(self::$_config[$name]) ? self::$_config[$name] : null;
-  }
+    $keys = explode('.', $key);
+    
+    // Root search
+    $k = array_shift($keys);
+    $opt = isset(self::$_config[$k]) ? self::$_config[$k] : null;
+    
+    // Iterative search
+    foreach ($keys as $k) {
+      if (!isset($opt[$k])) {
+        return $default;
+      }                
+      $opt = $opt[$k];
+    }
+    
+    return $opt !== null ? $opt : $default;
+  }  
 }

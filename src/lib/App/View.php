@@ -1,6 +1,6 @@
 <?php
 
-class View 
+class App_View 
 {
   public function renderLink($url, $title = null)
   {
@@ -16,6 +16,15 @@ class View
     $html .= "</ul>" . PHP_EOL;
 
     return $html;
+  }
+  
+  public function renderArticle($content, $title = null, $url = null)
+  {
+    return 
+      "<article>"  . PHP_EOL . 
+        ($title ? "<h2>" . ($url ? $this->renderLink($url, $title) : $title) . "</h2>" : "") . PHP_EOL . 
+        (is_array($content) ? $this->renderList($content) : $content . PHP_EOL) .
+      "</article>" . PHP_EOL;
   }
   
   /**
@@ -39,7 +48,7 @@ class View
       },
       // Replace hashtags
       '/[#]+[\wáéíóúàèìòùäëïöüñ]+/i' => function($m) use ($me) {
-        $q = Http::createQuery(array('q' => $m[0]));
+        $q = App_Http::createQuery(array('q' => $m[0]));
         return $me->renderLink("http://twitter.com/search$q", $m[0]);
       },
     );
