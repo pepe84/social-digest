@@ -1,0 +1,87 @@
+###############
+# Application #
+###############
+
+app:
+  # Main info
+  title: "My title"
+  description: "My description"
+
+  # News sections (default config)
+  # Title and url are optional
+  # Max is the maximum number of posts for each blog
+  blogs:
+    enabled: 1
+    max: 20
+    interval: "2 weeks"
+
+  # Twitter section
+  # Tag and url are optional
+  tweets:
+    enabled: 1
+    max: 20
+    tag: "#news"
+    title: "Tweets"
+
+  # Calendar section
+  # Url is optional
+  events:
+    enabled: 1
+    interval: "1 week"
+    title: "Agenda"
+    url: "http://calendar.net"
+
+  # More info
+  credits: 
+    - 'Builded by <a href="https://github.com/pepe84/social-digest">social-digest system</a>'
+
+  # Digest output
+  output:
+    # Full version includes html, head and body tags
+    full: 1
+    # File to generate
+    file: "digest.html"
+    # Optional mail delivery, very useful if you want to send content to a mailing 
+    # list or to upload a new WP post (http://jetpack:me/support/post-by-email)
+    # Note: If is enabled, full output is automatically disabled
+    mail:
+      enabled: 0
+      to: "xxx@post.wordpress.com"
+      from: "xxx@gmail.com"
+      bcc: "xxx@googlegroups.com"
+      append: "<p style='display:none'>[category Info]</p>"
+
+############
+# Services #
+############
+
+services:
+  # Google API v3
+  google:
+    apiKey: "FILL-ME-PLEASE"
+    calendar:
+      endpoint: "https://www.googleapis.com/calendar/v3"
+  # Bit.ly API v3
+  bitly:
+    apiKey: "FILL-ME-PLEASE"
+    endpoint: "https://api-ssl.bitly.com/v3"
+  # TODO Use Twitter API v1.1 https://dev.twitter.com/docs/api/1.1
+  # TODO Use TwitterOAuth lib https://github.com/abraham/twitteroauth
+  twitter:
+    urls:
+      profile: "https://twitter.com/%username"
+      status: "https://twitter.com/%username/status/%id"
+      search: "https://twitter.com/search?q=%query"
+
+################
+# Translations #
+################
+
+translations:
+  Mon: "Dl"
+  Tue: "Dm"
+  Wed: "Dx"
+  Thu: "Dj"
+  Fri: "Dv"
+  Sat: "Ds"
+  Sun: "Dg"

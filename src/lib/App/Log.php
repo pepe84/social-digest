@@ -1,6 +1,6 @@
 <?php
 
-class Log
+class App_Log
 {
   protected function _log($msg)
   {

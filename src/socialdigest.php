@@ -11,53 +11,83 @@ try {
    * Init app
    */
   
-  require_once 'lib/App.php';
-  new App(parse_ini_file('conf/app.ini'));
+  require_once __DIR__ . '/lib/App.php';
+  new App();
   
   /** 
    * Execution
    */
   
   $results = array();
-  $tag = App::conf('app.tag');
   $today = new DateTime();
   
   if (App::conf('app.blogs.enabled')) {
+    
     // Get blogs' posts
     App::log()->debug("Obtaining BLOGS info...");
     
-    foreach (App::conf('blogs') as $blog) {
-      // Read feed
-      try {
-        // Structure "url@type" (type is optional)
-        $blog = explode('@', $blog);
-        $resp = App::service()->getRss($blog[0], $tag, @$blog[1]);
-      } catch (Exception $e) {
-        App::log()->err($e->getMessage());
-      }
+    // Default filters
+    $defaultMax = App::conf('app.blogs.max');
+    $defaultInt = App::conf('app.blogs.interval');
+    
+    // Default data
+    $defaultTit = App::conf('app.blogs.title');
+    $defaultUrl = App::conf('app.blogs.url');
+    
+    foreach (App::conf('blogs') as $section) {
       
-      if (!empty($resp)) {
-        // Parse feed
-        $count = 0;
-        $max = App::conf('app.blogs.max');
-        $int = App::conf('app.blogs.interval');
-        
-        foreach ($resp->channel->item as $post) {
-          // Check time interval
-          $pubDateTime = new DateTime($post->pubDate);
-          $start = App::utils()->getDateSub($today, $int);
-          
-          if ($pubDateTime >= $start) {
-            // Using suffix to avoid key overriding
-            $date = App::utils()->getDateStr($pubDateTime);
-            $results[TYPE_POST][$post->pubDate . "#$count"] = "[{$resp->channel->title}][$date] {$post->title} - "
-              . App::view()->renderLink(App::service()->getBitlyUrl($post->link));
-            if ($count++ === $max) break;            
-          }
+      // Optional filters
+      $tag = @$section['tag'] ?: null;
+      $max = @$section['max'] ?: $defaultMax;
+      $int = @$section['interval'] ?: $defaultInt;
+      
+      // Optional data
+      $tit = @$section['title'] ?: $defaultTit;
+      $url = @$section['url'] ?: $defaultUrl;
+      
+      // Read feeds
+      foreach ($section['sources'] as $blog) {
+        try {
+          // Structure "url@type" (type is optional)
+          $blog = explode('@', $blog);
+          $resp = App::service()->getRss($blog[0], $tag, @$blog[1]);
+        } catch (Exception $e) {
+          App::log()->err($e->getMessage());
         }
-        // Order by date time
-        if (!empty($results[TYPE_POST])) {
-          krsort($results[TYPE_POST]);
+        
+        if (!empty($resp)) {
+          // Parse feed
+          $posts = array();
+          $count = 0;
+          
+          foreach ($resp->channel->item as $post) {
+            // Check time interval
+            $pubDateTime = new DateTime($post->pubDate);
+            $start = App::utils()->getDateSub($today, $int);
+
+            if ($pubDateTime >= $start) {
+              // Using suffix to avoid key overriding
+              $date = App::utils()->getDateStr($pubDateTime);
+              $posts[$post->pubDate . "#$count"] = "[{$resp->channel->title}][$date] {$post->title} - "
+                . App::view()->renderLink(App::service()->getBitlyUrl($post->link));
+              if ($count++ === $max) {
+                break;
+              }
+            }
+          }
+          if (!empty($posts)) {
+            // Order by date time
+            krsort($posts);
+            // Add result
+            if (!isset($results[TYPE_POST])) {
+              $results[TYPE_POST] = "";
+            }
+            $results[TYPE_POST] .= App::view()->renderArticle(
+              $posts, 
+              $tit, 
+              $url ? App::service()->getBitlyUrl($url) : null
+            );
+          }
         }
       }
     }    
@@ -67,8 +97,8 @@ try {
     // Get tweets
     App::log()->debug("Obtaining TWITTER info...");
     
-    $count = 0;
     $max = App::conf('app.tweets.max');
+    $tag = App::conf("app.tweets.tag");
     $resp = App::service()->getTweets("$tag+exclude:retweets", $max);
     
     if (!empty($resp)) {
@@ -87,7 +117,9 @@ try {
         $text = App::view()->renderTweet($tw->text);
         // Add result
         $results[TYPE_TWEET][] = "[$user][$date] $text";
-        if ($count++ === $max) break;
+        if (count($results[TYPE_TWEET]) === $max) {
+          break;
+        }
       }
     }        
   }
@@ -116,11 +148,11 @@ try {
           }
         }
       } else {
-        App::log()->err("Unable to get events from $calendar");
+        App::log()->err("No events from $calendar (" . json_encode($resp) . ")");
       }
     }
-    // Order by date time
     if (!empty($results[TYPE_EVENT])) {
+      // Order by date time
       ksort($results[TYPE_EVENT]);
     }
   }
@@ -162,22 +194,26 @@ try {
   // Sections
   
   App::output("<section>" . PHP_EOL);
-  foreach ($results as $type => $list) {
+  foreach ($results as $type => $content) {
     // Default
-    $title = App::conf("app.$type.title");
-    $url = App::conf("app.$type.url");
-    // Specific
-    if ($type === TYPE_TWEET && empty($url)) {
-        $url = App::conf('services.twitter.urls.search');
-        $url = str_replace('%query', urlencode($tag), $url);
+    if (is_array($content)) {
+      
+      $tit = App::conf("app.$type.title");
+      $url = App::conf("app.$type.url");
+      
+      if ($type === TYPE_TWEET && empty($url)) {
+          $url = App::conf('services.twitter.urls.search');
+          $url = str_replace('%query', urlencode($tag), $url);
+      }
+      
+      $content = App::view()->renderArticle(
+        $content, 
+        $tit, 
+        $url ? App::service()->getBitlyUrl($url) : null
+      );
     }
     // Render
-    App::output(
-      "<article>"  . PHP_EOL . 
-        "<h2>" . ($url ? App::view()->renderLink(App::service()->getBitlyUrl($url), $title) : $title) . "</h2>" . PHP_EOL . 
-        App::view()->renderList($list) .
-      "</article>" . PHP_EOL
-    );
+    App::output($content);
   }
   App::output("</section>" . PHP_EOL);
   
@@ -185,20 +221,25 @@ try {
   
   $credits = App::conf('app.credits');
   
-  array_walk($credits, function(&$val, $key) {
-    // Replace links
-    $val = preg_replace_callback(
-      '/([a-z]+:\/\/){0,1}[a-z0-9-_]+\.[a-z0-9-_:%&~\?\/.=]+/i', 
-      function ($matches) {
-        return App::service()->getBitlyUrl($matches[0]);
-      },
-      $val
+  if (!empty($credits)) {
+    
+    array_walk($credits, function(&$val, $key) {
+      // Replace links
+      $val = preg_replace_callback(
+        '/([a-z]+:\/\/){0,1}[a-z0-9-_]+\.[a-z0-9-_:%&~\?\/.=]+/i', 
+        function ($matches) {
+          return App::service()->getBitlyUrl($matches[0]);
+        },
+        $val
+      );
+    });
+
+    App::output(
+      "<footer>" . PHP_EOL . 
+        "<hr/>" . App::view()->renderList($credits) . 
+      "</footer>"
     );
-  });
-  
-  App::output(
-    "<footer>" . PHP_EOL . App::view()->renderList($credits) . "</footer>"
-  );
+  }
   
   // Close tags?
   

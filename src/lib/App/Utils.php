@@ -1,6 +1,6 @@
 <?php
 
-class Utils 
+class App_Utils 
 {
   public function getDateAdd($date, $str)
   {
@@ -29,7 +29,7 @@ class Utils
   
   public function t($str) 
   {
-    $config = Config::get("translations");
+    $config = App_Config::get("translations");
     return isset($config[$str]) ? $config[$str] : $str;
   }
 }
