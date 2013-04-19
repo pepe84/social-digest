@@ -10,8 +10,13 @@ class App_View
   public function renderList($list) 
   {
     $html = "<ul>" . PHP_EOL;
-    foreach ($list as $item) {
-      $html .= "<li>" . $item . "</li>" . PHP_EOL;
+    foreach ($list as $title => $item) {
+      if (is_array($item)) {
+        $html .= "<li>" . $title . "</li>" . PHP_EOL;
+        $html .= $this->renderList($item);
+      } else {
+        $html .= "<li>" . $item . "</li>" . PHP_EOL;
+      }
     }
     $html .= "</ul>" . PHP_EOL;
 

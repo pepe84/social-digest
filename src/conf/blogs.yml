@@ -9,6 +9,8 @@ blogs:
     title: "International news"
     url: http://www.bbc.co.uk/news/world/
     max: 100
+    author: 0
+    categories: 1
     sources:
       - http://www.bbc.co.uk/
 

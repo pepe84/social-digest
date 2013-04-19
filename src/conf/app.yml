@@ -8,15 +8,19 @@ app:
   description: "My description"
 
   # News sections (default config)
-  # Title and url are optional
-  # Max is the maximum number of posts for each blog
+  # - Title and url are optional
+  # - Max is the maximum number of posts for each blog
+  # - Flags author, date and category could be overriden too
   blogs:
     enabled: 1
     max: 20
     interval: "2 weeks"
+    author: 1
+    date: 1
+    category: 0
 
   # Twitter section
-  # Tag and url are optional
+  # - Tag and url are optional
   tweets:
     enabled: 1
     max: 20
@@ -24,7 +28,7 @@ app:
     title: "Tweets"
 
   # Calendar section
-  # Url is optional
+  # - Url is optional
   events:
     enabled: 1
     interval: "1 week"
@@ -85,3 +89,4 @@ translations:
   Fri: "Dv"
   Sat: "Ds"
   Sun: "Dg"
+  No category: Sense categoria

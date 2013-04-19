@@ -10,7 +10,7 @@ class App_Service
   const FEED_DL = 'delicious';
   const FEED_JL = 'joomla';
   
-  public function getRss($url, $tag = null, $type = null)
+  public function getRss($url, $tag = null, $type = null, $count = null)
   {
     // Try to discover type
     if (empty($type)) {
@@ -47,7 +47,7 @@ class App_Service
         // Delicious
         // https://delicious.com/developers/rssurls
         $user = end((explode('/', $url)));
-        $url = "http://feeds.delicious.com/v2/rss/$user" . ($tag ? "/tag/" . urlencode($tag) : "");
+        $url = "http://feeds.delicious.com/v2/rss/$user" . ($tag ? "/tag/" . urlencode($tag) : "") . "?count=100";
         break;
       case self::FEED_JL:
         # TODO /index.php?format=feed&type=rss  

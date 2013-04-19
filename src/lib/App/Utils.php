@@ -27,6 +27,11 @@ class App_Utils
     return ($showWeekDay ? $this->t($weekDay) . ' ' : '') . $day;
   }
   
+  public function getArrayValue($array, $key, $default = null)
+  {
+    return isset($array[$key]) ? $array[$key] : $default;
+  }
+  
   public function t($str) 
   {
     $config = App_Config::get("translations");

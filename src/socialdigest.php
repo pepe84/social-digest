@@ -34,16 +34,30 @@ try {
     $defaultTit = App::conf('app.blogs.title');
     $defaultUrl = App::conf('app.blogs.url');
     
+    // Default flags
+    $defaultAut = App::conf('app.blogs.author');
+    $defaultDat = App::conf('app.blogs.date');
+    $defaultCat = App::conf('app.blogs.category');
+    
     foreach (App::conf('blogs') as $section) {
       
       // Optional filters
-      $tag = @$section['tag'] ?: null;
-      $max = @$section['max'] ?: $defaultMax;
-      $int = @$section['interval'] ?: $defaultInt;
+      $tag = App::utils()->getArrayValue($section, 'tag');
+      $max = App::utils()->getArrayValue($section, 'max', $defaultMax);
+      $int = App::utils()->getArrayValue($section, 'interval', $defaultInt);
       
       // Optional data
-      $tit = @$section['title'] ?: $defaultTit;
-      $url = @$section['url'] ?: $defaultUrl;
+      $tit = App::utils()->getArrayValue($section, 'title', $defaultTit);
+      $url = App::utils()->getArrayValue($section, 'url', $defaultUrl);
+      
+      // Optional flags
+      $aut = App::utils()->getArrayValue($section, 'author', $defaultAut);
+      $dat = App::utils()->getArrayValue($section, 'date', $defaultDat);
+      $cat = App::utils()->getArrayValue($section, 'category', $defaultCat);
+      
+      // Data
+      $posts = array();
+      $count = 0;
       
       // Read feeds
       foreach ($section['sources'] as $blog) {
@@ -51,15 +65,13 @@ try {
           // Structure "url@type" (type is optional)
           $blog = explode('@', $blog);
           $resp = App::service()->getRss($blog[0], $tag, @$blog[1]);
+          App::log()->debug("Obtaining rss feed from " . $blog[0]);
         } catch (Exception $e) {
           App::log()->err($e->getMessage());
         }
         
         if (!empty($resp)) {
           // Parse feed
-          $posts = array();
-          $count = 0;
-          
           foreach ($resp->channel->item as $post) {
             // Check time interval
             $pubDateTime = new DateTime($post->pubDate);
@@ -68,29 +80,52 @@ try {
             if ($pubDateTime >= $start) {
               // Using suffix to avoid key overriding
               $date = App::utils()->getDateStr($pubDateTime);
-              $posts[$post->pubDate . "#$count"] = "[{$resp->channel->title}][$date] {$post->title} - "
-                . App::view()->renderLink(App::service()->getBitlyUrl($post->link));
+              $iKey = "{$post->pubDate}#$count";
+              $item = 
+                ($aut ? "[{$resp->channel->title}]" : "") . 
+                ($dat ? "[$date]" : "") . " {$post->title} - " . 
+                App::view()->renderLink(App::service()->getBitlyUrl($post->link));
+              // Categories?
+              if ($cat) {
+                $category = "{$post->category}" ?: App::utils()->t("No category");
+                $posts[$category][$iKey] = $item;
+              } else {
+                $posts[$iKey] = $item;
+              }
               if ($count++ === $max) {
                 break;
               }
             }
           }
-          if (!empty($posts)) {
-            // Order by date time
-            krsort($posts);
-            // Add result
-            if (!isset($results[TYPE_POST])) {
-              $results[TYPE_POST] = "";
-            }
-            $results[TYPE_POST] .= App::view()->renderArticle(
-              $posts, 
-              $tit, 
-              $url ? App::service()->getBitlyUrl($url) : null
-            );
-          }
         }
+        
+      } // end blogs foreach
+      
+      if (!empty($posts)) {
+
+        if ($cat) {
+          // Order posts by category
+          ksort($posts);
+          foreach ($posts as &$catPosts) {
+            // Order category posts by date time
+            krsort($catPosts);
+          }
+        } else {
+          // Order posts by date time
+          krsort($posts);
+        }
+
+        // Add results
+        if (!isset($results[TYPE_POST])) {
+          $results[TYPE_POST] = "";
+        }
+        $results[TYPE_POST] .= App::view()->renderArticle(
+          $posts, 
+          $tit, 
+          $url ? App::service()->getBitlyUrl($url) : null
+        );
       }
-    }    
+    } // end sections foreach    
   }
   
   if (App::conf('app.tweets.enabled')) {
