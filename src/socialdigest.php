@@ -20,6 +20,7 @@ try {
   
   $results = array();
   $today = new DateTime();
+  $dayMap = array();
   
   if (App::conf('app.blogs.enabled')) {
     
@@ -106,8 +107,8 @@ try {
         if ($cat) {
           // Order posts by category
           ksort($posts);
+          // Order category posts by date time
           foreach ($posts as &$catPosts) {
-            // Order category posts by date time
             krsort($catPosts);
           }
         } else {
@@ -135,28 +136,34 @@ try {
     $max = App::conf('app.tweets.max');
     $tag = App::conf("app.tweets.tag");
     $resp = App::service()->getTweets("$tag+exclude:retweets", $max);
+    $count = 0;
     
     if (!empty($resp)) {
       
+      App::log()->debug(count($resp->results) . " tweets received");
+      
       foreach ($resp->results as $tw) {
-        $search = array('%username',    '%id');
+        // Tweet status link
+        $search = array('%username', '%id');
         $replac = array($tw->from_user, $tw->id_str);
-        // User
-        $profileUrl = App::conf('services.twitter.urls.profile');      
-        $profileUrl = str_replace($search, $replac, $profileUrl);
-        $user = App::view()->renderLink($profileUrl, "@{$tw->from_user}");
-        // Date
         $statusUrl = App::conf('services.twitter.urls.status');
         $statusUrl = str_replace($search, $replac, $statusUrl);
-        $date = App::view()->renderLink($statusUrl, App::utils()->getDateStr($tw->created_at));
-        $text = App::view()->renderTweet($tw->text);
+        $user = App::view()->renderLink($statusUrl, "@{$tw->from_user}");
+        // Tweet date
+        $dateTime = $tw->created_at;
+        $date = App::utils()->getDateStr($dateTime);
         // Add result
-        $results[TYPE_TWEET][] = "[$user][$date] $text";
-        if (count($results[TYPE_TWEET]) === $max) {
+        $results[TYPE_TWEET][$date][] = "[$user] " . App::view()->renderTweet($tw->text);
+        // Store days hashmap
+        if (!isset($dayMap[$date])) {
+          $dayMap[$date] = App::utils()->getDateStr($dateTime, true, false, true);
+        }
+        // Check max limit
+        if ($count++ === $max) {
           break;
         }
       }
-    }        
+    }
   }
   
   if (App::conf('app.events.enabled')) {
@@ -175,20 +182,21 @@ try {
         foreach ($resp->items as $event) {
           if (!empty($event->start)) {
             $dateTime = isset($event->start->dateTime) ? $event->start->dateTime : $event->start->date;
-            $date = App::utils()->getDateStr($dateTime, true, true);
+            $date = App::utils()->getDateStr($dateTime);
+            $hour = App::utils()->getDateStr($dateTime, false, true);
             // Using suffix to avoid key overriding
-            $results[TYPE_EVENT][$dateTime . "#$count"] = "[$date] {$event->summary} - "
+            $results[TYPE_EVENT][$date][$dateTime . "#$count"] = "[{$hour}h] {$event->summary} - "
               . App::view()->renderLink(App::service()->getBitlyUrl($event->htmlLink));
             $count++;
+            // Store days hashmap
+            if (!isset($dayMap[$date])) {
+              $dayMap[$date] = App::utils()->getDateStr($dateTime, true, false, true);
+            }
           }
         }
       } else {
         App::log()->err("No events from $calendar (" . json_encode($resp) . ")");
       }
-    }
-    if (!empty($results[TYPE_EVENT])) {
-      // Order by date time
-      ksort($results[TYPE_EVENT]);
     }
   }
   
@@ -241,14 +249,30 @@ try {
           $url = str_replace('%query', urlencode($tag), $url);
       }
       
+      if (!empty($content)) {
+        // Order by date time
+        ksort($content);
+        // Internal order
+        foreach ($content as $day => &$dailyContent) {
+          ksort($dailyContent);
+          // Change key to include weekday
+          $orderedContent[$dayMap[$day]] = $dailyContent;
+          unset($content[$day]);
+        }
+      }
+      // Render content
       $content = App::view()->renderArticle(
-        $content, 
+        $orderedContent, 
         $tit, 
         $url ? App::service()->getBitlyUrl($url) : null
       );
+      // Free memory
+      unset($orderedContent);
     }
     // Render
     App::output($content);
+    // Free memory
+    unset($content);
   }
   App::output("</section>" . PHP_EOL);
   
