@@ -25,6 +25,8 @@ class App
     
     $loader->register();
     
+    require_once __DIR__ . '/Swift/lib/swift_required.php';
+    
     // Set configuration
     foreach(array('app', 'blogs', 'calendars') as $cnf) {
       $config = Yaml::parse(__DIR__ . "/../conf/$cnf.yml");

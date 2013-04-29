@@ -208,7 +208,7 @@ try {
    * Render
    */
   
-  $main = App::conf('app.title') . " ". date('d/m/Y');
+  $title = App::conf('app.title') . " ". date('d/m/Y');
   $mail  = App::conf('app.output.mail.enabled');
   $full  = empty($mail) && App::conf('app.output.full');
   
@@ -230,7 +230,7 @@ try {
   
   App::output(
     "<header>" . PHP_EOL . 
-      "<h1>" . $main . "</h1>" . PHP_EOL . 
+      "<h1>" . $title . "</h1>" . PHP_EOL . 
     "</header>" . PHP_EOL
   );
   
@@ -313,24 +313,32 @@ try {
   
   if (!empty($mail)) {
     // Prepare delivery
+    $message = App::mail()->createMessage();
     $to = App::conf('app.output.mail.to');
-    $headers = "";
-    foreach (array('from', 'cc', 'bcc') as $add) {
-      $a = App::conf("app.output.mail.$add");
-      if (!empty($a)) {
-        $headers .= ucfirst($add) . ": $a\r\n";
+    $message->setTo($to);
+    $message->setSubject($title);
+    $message->setBody(
+      App::output() . (App::conf('app.output.mail.append') ?: ""), 
+      'text/html'
+    );
+    // Optional values
+    $recipients = "to:$to";
+    foreach (array('from', 'cc', 'bcc') as $header) {
+      $address = App::conf("app.output.mail.$header");
+      if (!empty($address)) {
+        $method = 'set' . ucfirst($header);
+        $message->{$method}($address);
+        $recipients .= ", $header:$address";
       }
     }
-    $headers .= "X-Mailer: php";
-    $append = App::conf('app.output.mail.append') ?: "";
     // Send e-mail
-    App::log()->debug("Sending mail to $to");
-    $ok = mail($to, $title, App::output() . $append, $headers);
+    App::log()->debug("Sending mail ($recipients)");
+    $ok = App::mail()->sendMessage($message, true);
     // Success?
     if ($ok) {
       App::log()->debug("Message sent ok!");
     } else {
-      App::log()->debug("Message delivery failed.");
+      App::log()->err("Message delivery failed.");
     }
   }
   

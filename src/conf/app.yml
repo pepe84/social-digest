@@ -55,6 +55,17 @@ app:
       bcc: "xxx@googlegroups.com"
       append: "<p style='display:none'>[category Info]</p>"
 
+########
+# Mail #
+########
+
+#mail:
+#  host:       localhost
+#  port:       25
+#  username:   your_username
+#  password:   your_password
+#  encryption: ssl
+
 ############
 # Services #
 ############
@@ -89,4 +100,4 @@ translations:
   Fri: "Dv"
   Sat: "Ds"
   Sun: "Dg"
-  No category: Sense categoria
+  No category: "Sense categoria"
