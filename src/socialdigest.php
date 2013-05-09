@@ -38,16 +38,14 @@ try {
         foreach ($resp->items as $event) {
           if (!empty($event->start)) {
             $dateTime = isset($event->start->dateTime) ? $event->start->dateTime : $event->start->date;
-            $date = App::utils()->getDateStr($dateTime);
-            $hour = App::utils()->getDateStr($dateTime, false, true);
+            $dateKey = date_format(new DateTime($dateTime), 'Y-m-d');
+            $hour = App::view()->renderDate($dateTime, false, true);
             // Using suffix to avoid key overriding
-            $results[TYPE_EVENT][$date][$dateTime . "#$count"] = "[{$hour}h] {$event->summary} - "
+            $results[TYPE_EVENT][$dateKey][$hour . "#$count"] = "[{$hour}h] {$event->summary} - "
               . App::view()->renderLink(App::service()->getBitlyUrl($event->htmlLink));
             $count++;
             // Store days hashmap
-            if (!isset($dayMap[$date])) {
-              $dayMap[$date] = App::utils()->getDateStr($dateTime, true, false, true);
-            }
+            App::mapDate($dateTime);
           }
         }
       } else {
@@ -114,7 +112,7 @@ try {
 
             if ($pubDateTime >= $start) {
               // Using suffix to avoid key overriding
-              $date = App::utils()->getDateStr($pubDateTime);
+              $date = App::view()->renderDate($pubDateTime);
               $iKey = "{$post->pubDate}#$count";
               $item = 
                 ($aut ? "[{$resp->channel->title}]" : "") . 
@@ -185,13 +183,11 @@ try {
         $user = App::view()->renderLink($statusUrl, "@{$tw->from_user}");
         // Tweet date
         $dateTime = $tw->created_at;
-        $date = App::utils()->getDateStr($dateTime);
+        $dateKey = date_format(new DateTime($dateTime), 'Y-m-d');
         // Add result
-        $results[TYPE_TWEET][$date][] = "[$user] " . App::view()->renderTweet($tw->text);
+        $results[TYPE_TWEET][$dateKey][] = "[$user] " . App::view()->renderTweet($tw->text);
         // Store days hashmap
-        if (!isset($dayMap[$date])) {
-          $dayMap[$date] = App::utils()->getDateStr($dateTime, true, false, true);
-        }
+        App::mapDate($dateTime);
         // Check max limit
         if ($count++ === $max) {
           break;
@@ -256,7 +252,7 @@ try {
         foreach ($content as $day => &$dailyContent) {
           ksort($dailyContent);
           // Change key to include weekday
-          $orderedContent[$dayMap[$day]] = $dailyContent;
+          $orderedContent[App::$datesMap[$day]] = $dailyContent;
           unset($content[$day]);
         }
       }

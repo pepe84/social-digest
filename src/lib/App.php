@@ -7,7 +7,9 @@ class App
 {
   static protected $_instances = array();
   static protected $_filename = null;
-
+  
+  static public $datesMap = array();
+  
   public function __construct() 
   {
     // Set paths
@@ -66,6 +68,16 @@ class App
       return file_get_contents(self::$_filename);
     } else {
       return file_put_contents(self::$_filename, $str, FILE_APPEND | LOCK_EX);
+    }
+  }
+  
+  static public function mapDate($date)
+  {
+    $date = is_a($date, 'DateTime') ? $date : new DateTime($date);
+    $hash = date_format($date, 'Y-m-d');
+    
+    if (!isset(self::$datesMap[$hash])) {
+      self::$datesMap[$hash] = self::view()->renderDate($date, true, false, true);
     }
   }
 }

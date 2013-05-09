@@ -2,6 +2,16 @@
 
 class App_View 
 {
+  public function renderDate($date, $showDay = true, $showHour = false, $showWeekDay = false)
+  {
+    $date = is_a($date, 'DateTime') ? $date : new DateTime($date);
+    $weekDay = date_format($date, 'D');
+    $day = date_format($date, ($showDay ? 'd-m-Y' : '') . 
+      ($showDay && $showHour ? ' ' : '') . ($showHour ? 'H:i' : ''));
+    
+    return ($showWeekDay ? App::utils()->t($weekDay) . ' ' : '') . $day;
+  }
+  
   public function renderLink($url, $title = null)
   {
     return "<a href='$url' target='_blank'>" . ($title ?: $url) . "</a>";
