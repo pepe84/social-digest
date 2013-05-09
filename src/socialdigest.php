@@ -22,6 +22,40 @@ try {
   $today = new DateTime();
   $dayMap = array();
   
+  if (App::conf('app.events.enabled')) {
+    // Get events
+    App::log()->debug("Obtaining GOOGLE CALENDAR info...");
+    
+    $count = 0;
+    $int = App::conf('app.events.interval');
+      
+    foreach (App::conf('calendars') as $calendar) {
+      
+      $end = App::utils()->getDateAdd($today, $int);
+      $resp = App::service()->getGoogleCalendarEvents($calendar, $today, $end);
+      
+      if (!empty($resp) && !empty($resp->items)) {
+        foreach ($resp->items as $event) {
+          if (!empty($event->start)) {
+            $dateTime = isset($event->start->dateTime) ? $event->start->dateTime : $event->start->date;
+            $date = App::utils()->getDateStr($dateTime);
+            $hour = App::utils()->getDateStr($dateTime, false, true);
+            // Using suffix to avoid key overriding
+            $results[TYPE_EVENT][$date][$dateTime . "#$count"] = "[{$hour}h] {$event->summary} - "
+              . App::view()->renderLink(App::service()->getBitlyUrl($event->htmlLink));
+            $count++;
+            // Store days hashmap
+            if (!isset($dayMap[$date])) {
+              $dayMap[$date] = App::utils()->getDateStr($dateTime, true, false, true);
+            }
+          }
+        }
+      } else {
+        App::log()->err("No events from $calendar (" . json_encode($resp) . ")");
+      }
+    }
+  }
+  
   if (App::conf('app.blogs.enabled')) {
     
     // Get blogs' posts
@@ -166,40 +200,6 @@ try {
     }
   }
   
-  if (App::conf('app.events.enabled')) {
-    // Get events
-    App::log()->debug("Obtaining GOOGLE CALENDAR info...");
-    
-    $count = 0;
-    $int = App::conf('app.events.interval');
-      
-    foreach (App::conf('calendars') as $calendar) {
-      
-      $end = App::utils()->getDateAdd($today, $int);
-      $resp = App::service()->getGoogleCalendarEvents($calendar, $today, $end);
-      
-      if (!empty($resp) && !empty($resp->items)) {
-        foreach ($resp->items as $event) {
-          if (!empty($event->start)) {
-            $dateTime = isset($event->start->dateTime) ? $event->start->dateTime : $event->start->date;
-            $date = App::utils()->getDateStr($dateTime);
-            $hour = App::utils()->getDateStr($dateTime, false, true);
-            // Using suffix to avoid key overriding
-            $results[TYPE_EVENT][$date][$dateTime . "#$count"] = "[{$hour}h] {$event->summary} - "
-              . App::view()->renderLink(App::service()->getBitlyUrl($event->htmlLink));
-            $count++;
-            // Store days hashmap
-            if (!isset($dayMap[$date])) {
-              $dayMap[$date] = App::utils()->getDateStr($dateTime, true, false, true);
-            }
-          }
-        }
-      } else {
-        App::log()->err("No events from $calendar (" . json_encode($resp) . ")");
-      }
-    }
-  }
-  
   // Total
   
   App::log()->debug("TOTAL: " . count($results) . " section/s have updates");
@@ -224,15 +224,15 @@ try {
         </head>
         <body>'
     );
+    
+    // Title and credits
+
+    App::output(
+      "<header>" . PHP_EOL . 
+        "<h1>" . $title . "</h1>" . PHP_EOL . 
+      "</header>" . PHP_EOL
+    );
   }
-  
-  // Title and credits
-  
-  App::output(
-    "<header>" . PHP_EOL . 
-      "<h1>" . $title . "</h1>" . PHP_EOL . 
-    "</header>" . PHP_EOL
-  );
   
   // Sections
   
