@@ -53,12 +53,12 @@ class App_Service
         # TODO /index.php?format=feed&type=rss  
       default:
         // Not implemented
-        throw new InvalidArgumentException("Unable to read blog $url");
+        throw new InvalidArgumentException("Unable to read rss $url");
     }
     
     return App_Http::getRequest($url, App_Http::CONTENT_TYPE_XML);
   }
-
+  
   public function getTweets($search, $max, $type = 'recent')
   {
     // Twitter API v1.0 (deprecated!)
