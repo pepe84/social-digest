@@ -145,8 +145,8 @@ class App extends Command
     
     // Total
 
-    self::log()->debug("TOTAL: " . count($this->results) . " section/s have updates");
-
+    self::log()->info("TOTAL: " . count($this->results) . " section/s have updates");
+    
     /**
      * Render
      */
@@ -179,8 +179,10 @@ class App extends Command
     $defaultDat = $this->conf('app.blogs.date');
     $defaultCat = $this->conf('app.blogs.category');
 
-    foreach ($this->conf('blogs') as $section) {
-
+    foreach ($this->conf('blogs') as $name => $section) {
+      
+      self::log()->info("Starting $name section...");
+      
       // Optional filters
       $tag = self::utils()->getArrayValue($section, 'tag');
       $max = self::utils()->getArrayValue($section, 'max', $defaultMax);
@@ -197,8 +199,7 @@ class App extends Command
 
       // Data
       $posts = array();
-      $count = 0;
-
+      
       // Read feeds
       foreach ($section['sources'] as $blog) {
         try {
@@ -211,6 +212,8 @@ class App extends Command
         }
 
         if (!empty($resp)) {
+          // Reset counter
+          $count = 0;
           // Parse feed
           foreach ($resp->channel->item as $post) {
             // Check time interval
@@ -220,19 +223,20 @@ class App extends Command
             if ($pubDateTime >= $start) {
               // Using suffix to avoid key overriding
               $date = self::view()->renderDate($pubDateTime);
+              $author = trim("{$resp->channel->title}");
               $iKey = "{$post->pubDate}#$count";
-              $item = 
-                ($aut ? "[{$resp->channel->title}]" : "") . 
-                ($dat ? "[$date]" : "") . " {$post->title} - " . 
+              $item = ($aut && $cat ? "[$author]" : "") . ($dat ? "[$date]" : "") . " {$post->title} - " . 
                 self::view()->renderLink(self::service()->getBitlyUrl($post->link));
               // Categories?
               if ($cat) {
                 $category = "{$post->category}" ?: self::utils()->t("No category");
                 $posts[$category][$iKey] = $item;
+              } else if ($aut) {
+                $posts[$author][$iKey] = $item;
               } else {
                 $posts[$iKey] = $item;
               }
-              if ($count++ === $max) {
+              if ($count++ === $max-1) {
                 break;
               }
             }
@@ -243,18 +247,18 @@ class App extends Command
 
       if (!empty($posts)) {
 
-        if ($cat) {
-          // Order posts by category
+        if ($cat || $aut) {
+          // Order posts by category / author
           ksort($posts);
-          // Order category posts by date time
-          foreach ($posts as &$catPosts) {
-            krsort($catPosts);
+          // Order posts by date time
+          foreach ($posts as &$subPosts) {
+            krsort($subPosts);
           }
         } else {
           // Order posts by date time
           krsort($posts);
         }
-
+        
         // Add results
         if (!isset($this->results[self::TYPE_POST])) {
           $this->results[self::TYPE_POST] = "";
@@ -296,7 +300,7 @@ class App extends Command
         // Store days hashmap
         $this->mapDate($dateTime);
         // Check max limit
-        if ($count++ === $max) {
+        if ($count++ === $max-1) {
           break;
         }
       }
