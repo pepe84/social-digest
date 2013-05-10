@@ -21,9 +21,10 @@ class App_Http
     if (!empty($content)) {
       switch ($type) {
         case self::CONTENT_TYPE_XML:
-          return new SimpleXmlElement($content);
+          stripslashes($content);
+          return @new SimpleXmlElement($content);
         case self::CONTENT_TYPE_JSON:
-          return json_decode($content);
+          return @json_decode($content);
       }
     }
 

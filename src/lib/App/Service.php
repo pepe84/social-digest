@@ -30,17 +30,17 @@ class App_Service
       case self::FEED_WP:
         // Wordpress
         // http://codex.wordpress.org/WordPress_Feeds#Categories_and_Tags
-        $url = $url . "?feed=rss2" . ($tag ? "&tag=" . urlencode($tag) : "");
+        $url .= "?feed=rss2" . ($tag ? "&tag=" . urlencode($tag) : "");
         break;
       case self::FEED_BG:
       case self::FEED_BS:
         // Blogspot / Blogger (Google)
         // https://developers.google.com/blogger/docs/2.0/developers_guide_protocol#RetrievingWithQuery
-        $url = $url . "/feeds/posts/default" . ($tag ? "/-/" . urlencode($tag) : "") . "?alt=rss";
+        $url .= "/feeds/posts/default" . ($tag ? "/-/" . urlencode($tag) : "") . "?alt=rss";
         break;
       case self::FEED_SN:
         // Statusnet
-        $url = $url . "/api" . ($tag ? "/statusnet/tags/timeline/" . str_replace('#', '', $tag) . ".rss" 
+        $url .= "/api" . ($tag ? "/statusnet/tags/timeline/" . str_replace('#', '', $tag) . ".rss" 
           : "/statuses/public_timeline.rss");
         break;
       case self::FEED_DL:
@@ -50,10 +50,10 @@ class App_Service
         $url = "http://feeds.delicious.com/v2/rss/$user" . ($tag ? "/tag/" . urlencode($tag) : "") . "?count=100";
         break;
       case self::FEED_JL:
-        # TODO /index.php?format=feed&type=rss  
+        # TODO Available tag support?
+        $url .= "/index.php?format=feed&type=rss";
       default:
-        // Not implemented
-        throw new InvalidArgumentException("Unable to read rss $url");
+        // Do nothing, url should already be a feed
     }
     
     return App_Http::getRequest($url, App_Http::CONTENT_TYPE_XML);
