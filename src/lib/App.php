@@ -55,8 +55,11 @@ class App extends Command
   {
     // Set configuration
     foreach(array('app', 'blogs', 'calendars') as $cnf) {
-      $config = Yaml::parse("$path/$cnf.yml");
-      App_Config::setConfig($config);
+      $file = "$path/$cnf.yml";
+      if (file_exists($file)) {
+        $config = Yaml::parse($file);
+        App_Config::setConfig($config);
+      }
     }
     
     // Initialize output file
@@ -215,7 +218,7 @@ class App extends Command
           // Reset counter
           $count = 0;
           // Parse feed
-          foreach ($resp->channel->item as $post) {
+          foreach (isset($resp->entry) ? $resp->entry : $resp->channel->item as $post) {
             // Check time interval
             $pubDateTime = new DateTime($post->pubDate);
             $start = self::utils()->getDateSub($today, $int);

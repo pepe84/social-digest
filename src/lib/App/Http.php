@@ -22,7 +22,7 @@ class App_Http
       switch ($type) {
         case self::CONTENT_TYPE_XML:
           stripslashes($content);
-          return @new SimpleXmlElement($content);
+          return @simplexml_load_string($content);
         case self::CONTENT_TYPE_JSON:
           return @json_decode($content);
       }
