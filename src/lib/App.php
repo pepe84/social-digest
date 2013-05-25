@@ -204,7 +204,7 @@ class App extends Command
       $posts = array();
       
       // Read feeds
-      foreach ($section['sources'] as $blog) {
+      foreach ($section['sources'] as $author => $blog) {
         try {
           // Structure "url@type" (type is optional)
           $blog = explode('@', $blog);
@@ -213,10 +213,15 @@ class App extends Command
         } catch (Exception $e) {
           self::log()->err($e->getMessage());
         }
-
+        
         if (!empty($resp)) {
           // Reset counter
           $count = 0;
+          // Get author from RSS information
+          if (is_numeric($author)) {
+            $elem = isset($resp->title) ? $resp->title : $resp->channel->title;
+            $author = trim("{$elem}");
+          }
           // Parse feed
           foreach (isset($resp->entry) ? $resp->entry : $resp->channel->item as $post) {
             // Check time interval
@@ -226,7 +231,6 @@ class App extends Command
             if ($pubDateTime >= $start) {
               // Using suffix to avoid key overriding
               $date = self::view()->renderDate($pubDateTime);
-              $author = trim("{$resp->channel->title}");
               $iKey = "{$post->pubDate}#$count";
               $item = ($aut && $cat ? "[$author]" : "") . ($dat ? "[$date]" : "") . " {$post->title} - " . 
                 self::view()->renderLink(self::service()->getBitlyUrl($post->link));
