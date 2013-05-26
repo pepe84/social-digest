@@ -1,14 +1,32 @@
 <?php
 
+use Symfony\Component\Yaml\Yaml;
+
 class App_Config 
 {
   static protected $_config = array();
   
   /**
+   * 
+   * @param string $path
+   */
+  static public function init($path)
+  {
+    // Set configuration
+    foreach(array('app', 'blogs', 'calendars') as $cnf) {
+      $file = "$path/$cnf.yml";
+      if (file_exists($file)) {
+        $config = Yaml::parse($file);
+        self::_setConfig($config);
+      }
+    }
+  }
+  
+  /**
    *
    * @param array $config Multi-dimensional array
    */
-  static public function setConfig(array $config)
+  static protected function _setConfig(array $config)
   {
     self::$_config = array_merge(self::$_config, $config);
   }

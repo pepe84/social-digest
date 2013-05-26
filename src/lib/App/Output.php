@@ -12,8 +12,6 @@ class App_Output
     if (!file_exists($this->_filename)) {
       touch($this->_filename);
     }
-    
-    file_put_contents($this->_filename, "");
   }
   
   /**
@@ -33,5 +31,14 @@ class App_Output
   public function write($content) 
   {
     return file_put_contents($this->_filename, $content, FILE_APPEND | LOCK_EX);
+  }
+  
+  /**
+   * 
+   * @return int|boolean
+   */
+  public function clear() 
+  {
+    return file_put_contents($this->_filename, "");
   }
 }

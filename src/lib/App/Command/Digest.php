@@ -15,20 +15,6 @@ class App_Command_Digest extends Command
   protected $_datesMap = array();
   protected $_results = array();
   
-  protected function _setConfigurationPath($path)
-  {
-    // Set configuration
-    foreach(array('app', 'blogs', 'calendars') as $cnf) {
-      $file = "$path/$cnf.yml";
-      if (file_exists($file)) {
-        $config = Yaml::parse($file);
-        App_Registry::config()->setConfig($config);
-      }
-    }
-  }
-  
-  // Command methods
-  
   protected function configure()
   {
     $this ->setName('run')
@@ -45,12 +31,13 @@ class App_Command_Digest extends Command
     // Get options
     $path = $input->getArgument('config') ?: __DIR__ . "/../../../conf";
     
-    // Get configuration
-    $this->_setConfigurationPath($path);
+    // Configue app
+    App_Registry::config()->init($path);
     
-    // Configure app
+    // Dependency injection
     $filename = App_Registry::config()->get('app.output.file');
     App_Registry::output()->init($filename);
+    App_Registry::output()->clear($filename);
     App_Registry::log()->setLogger($output);
     
     // Execute
