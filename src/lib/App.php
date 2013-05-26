@@ -29,6 +29,7 @@ class App
   {
     $application = new Application();
     $application->add(new App_Command_Digest());
+    $application->add(new App_Command_Mail());
     $application->run();
   }
 }
