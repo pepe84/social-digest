@@ -10,18 +10,34 @@ class App_Service
   const FEED_DL = 'delicious';
   const FEED_JL = 'joomla';
   
-  public function getRss($url, $tag = null, $type = null, $count = null)
+  public function getRegexs()
+  {
+    static $regexs;
+     
+    if (empty($regexs)) {
+      // Using root to avoid overriding custom feed urls
+      $root = "/^https{0,1}:\/\/#dom#\/{0,1}$/i";
+      // Custom types
+      $regexs = array(
+        self::FEED_WP => str_replace('#dom#', '(\w+).wordpress.com', $root),
+        self::FEED_BG => str_replace('#dom#', '(\w+).blogger.com', $root),
+        self::FEED_BS => str_replace('#dom#', '(\w+).blogspot.com', $root),
+        self::FEED_DL => str_replace('#dom#', 'delicious.com\/(\w+)', $root),
+      );
+    }
+      
+    return $regexs;
+  }
+  
+  public function getRss($url, $tag = null, $type = null, $count = 100)
   {
     // Try to discover type
     if (empty($type)) {
-      if (stripos($url, 'wordpress.com')) {
-        $type = self::FEED_WP;        
-      } else if (stripos($url, 'blogger.com')) { 
-        $type = self::FEED_BG;        
-      } else if (stripos($url, 'blogspot.com')) {
-        $type = self::FEED_BS;
-      } else if (stripos($url, 'delicious.com')) {
-        $type = self::FEED_DL;
+      foreach ($this->getRegexs() as $service => $regex) {
+        if (preg_match($regex, $url)) {
+          $type = $service;
+          break;
+        }
       }
     }
     
@@ -47,7 +63,7 @@ class App_Service
         // Delicious
         // https://delicious.com/developers/rssurls
         $user = end((explode('/', $url)));
-        $url = "http://feeds.delicious.com/v2/rss/$user" . ($tag ? "/tag/" . urlencode($tag) : "") . "?count=100";
+        $url = "http://feeds.delicious.com/v2/rss/$user" . ($tag ? "/tag/" . urlencode($tag) : "") . "?count=$count";
         break;
       case self::FEED_JL:
         # TODO Available tag support?
