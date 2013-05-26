@@ -374,35 +374,9 @@ class App_Command_Digest extends Command
     }
   }
   
-  public function sendMail($title)
+  public function sendMail()
   {
-    // Prepare delivery
-    $message = App_Registry::mail()->createMessage();
-    $to = App_Registry::config()->get('app.output.mail.to');
-    $message->setTo($to);
-    $message->setSubject($title);
-    $message->setBody(
-      App_Registry::output()->read() . (App_Registry::config()->get('app.output.mail.append') ?: ""), 
-      'text/html'
-    );
-    // Optional values
-    $recipients = array("to" => $to);
-    foreach (array('from', 'cc', 'bcc') as $header) {
-      $address = App_Registry::config()->get("app.output.mail.$header");
-      if (!empty($address)) {
-        $method = 'set' . ucfirst($header);
-        $message->{$method}($address);
-        $recipients[$header] = $address;
-      }
-    }
-    // Send e-mail
-    App_Registry::log()->info("Sending mail (" . json_encode($recipients) . ")");
-    $ok = App_Registry::mail()->sendMessage($message, true);
-    // Success?
-    if ($ok) {
-      App_Registry::log()->info("Message sent ok!");
-    } else {
-      App_Registry::log()->err("Message delivery failed.");
-    }    
-  }  
+    $command = new App_Command_Mail();
+    $command->send();
+  }
 }
