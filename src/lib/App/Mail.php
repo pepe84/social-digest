@@ -12,7 +12,7 @@ class App_Mail
   {
     if (!$this->_transport) {
       // Get mail configuration
-      $cnf = App::conf('mail');
+      $cnf = App_Registry::config()->get('mail');
       
       if (!empty($cnf)) {
         // Custom transport

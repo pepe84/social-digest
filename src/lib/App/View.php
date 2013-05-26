@@ -9,7 +9,7 @@ class App_View
     $day = date_format($date, ($showDay ? 'd-m-Y' : '') . 
       ($showDay && $showHour ? ' ' : '') . ($showHour ? 'H:i' : ''));
     
-    return ($showWeekDay ? App::utils()->t($weekDay) . ' ' : '') . $day;
+    return ($showWeekDay ? App_Registry::utils()->t($weekDay) . ' ' : '') . $day;
   }
   
   public function renderLink($url, $title = null)
