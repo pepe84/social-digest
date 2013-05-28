@@ -44,6 +44,8 @@ app:
   output:
     # Full version includes html, head and body tags
     full: 1
+    # CSS style path (optional)
+    style: ""
     # File to generate
     file: "digest.html"
     # Optional mail delivery, very useful if you want to send content to a mailing 

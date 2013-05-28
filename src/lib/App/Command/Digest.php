@@ -11,11 +11,14 @@ class App_Command_Digest extends Command
   const TYPE_TWEET = 'tweets';
   const TYPE_EVENT = 'events';
   
+  protected $_defaultConfigPath = null;
+  protected $_configPath = null;
   protected $_datesMap = array();
   protected $_results = array();
   
   protected function configure()
   {
+    // Command
     $this ->setName('run')
           ->setDescription('Social digest system (HTML)')
           ->addArgument(
@@ -23,15 +26,17 @@ class App_Command_Digest extends Command
             InputArgument::OPTIONAL,
             'Configuration files folder path'
           );
+    // Configuration
+    $this->_defaultConfigPath = __DIR__ . "/../../../conf";
   }
   
   protected function execute(InputInterface $input, OutputInterface $output)
   {
     // Get options
-    $path = $input->getArgument('config') ?: __DIR__ . "/../../../conf";
+    $this->_configPath = $input->getArgument('config') ?: $this->_defaultConfigPath;
     
     // Configue app
-    App_Registry::config()->init($path);
+    App_Registry::config()->init($this->_configPath);
     
     // Dependency injection
     $filename = App_Registry::config()->get('app.output.file');
@@ -191,7 +196,8 @@ class App_Command_Digest extends Command
         $this->results[self::TYPE_POST] .= App_Registry::view()->renderArticle(
           $posts, 
           $tit, 
-          $url ? App_Registry::service()->getBitlyUrl($url) : null
+          $url ? App_Registry::service()->getBitlyUrl($url) : null,
+          self::TYPE_POST
         );
       }
     } // end sections foreach    
@@ -290,7 +296,26 @@ class App_Command_Digest extends Command
         "</header>" . PHP_EOL
       );
     }
-
+    
+    // CSS style
+    
+    $stack = array(
+      App_Registry::config()->get('app.output.style'),
+      $this->_configPath . '/default.css',
+      $this->_defaultConfigPath . '/default.css'
+    );
+    
+    foreach ($stack as $filepath) {
+      if (file_exists($filepath)) {
+        App_Registry::output()->write(
+          "<style>" . PHP_EOL . 
+          file_get_contents($filepath) . PHP_EOL . 
+          "</style>" . PHP_EOL
+        );
+        break;
+      }
+    }
+    
     // Sections
     
     App_Registry::output()->write("<section>" . PHP_EOL);
@@ -322,7 +347,8 @@ class App_Command_Digest extends Command
         $content = App_Registry::view()->renderArticle(
           $orderedContent, 
           $tit, 
-          $url ? App_Registry::service()->getBitlyUrl($url) : null
+          $url ? App_Registry::service()->getBitlyUrl($url) : null,
+          $type
         );
         // Free memory
         unset($orderedContent);
@@ -354,7 +380,7 @@ class App_Command_Digest extends Command
       
       App_Registry::output()->write(
         "<footer>" . PHP_EOL . 
-          "<hr/>" . App_Registry::view()->renderList($credits) . 
+          App_Registry::view()->renderList($credits) . 
         "</footer>"
       );
     }

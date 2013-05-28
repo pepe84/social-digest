@@ -17,15 +17,16 @@ class App_View
     return "<a href='$url' target='_blank'>" . ($title ?: $url) . "</a>";
   }
 
-  public function renderList($list) 
+  public function renderList($list, $depth = 0) 
   {
-    $html = "<ul>" . PHP_EOL;
+    $html = "<ul class=\"depth$depth\">" . PHP_EOL;
+    
     foreach ($list as $title => $item) {
+      $html .= "<li class=\"depth$depth-item\">" . 
+                  (is_array($item) ? $title : $item) .
+               "</li>" . PHP_EOL;
       if (is_array($item)) {
-        $html .= "<li>" . $title . "</li>" . PHP_EOL;
-        $html .= $this->renderList($item);
-      } else {
-        $html .= "<li>" . $item . "</li>" . PHP_EOL;
+        $html .= $this->renderList($item, $depth + 1);
       }
     }
     $html .= "</ul>" . PHP_EOL;
@@ -33,10 +34,10 @@ class App_View
     return $html;
   }
   
-  public function renderArticle($content, $title = null, $url = null)
+  public function renderArticle($content, $title = null, $url = null, $class = 'default')
   {
     return 
-      "<article>"  . PHP_EOL . 
+      "<article class=\"{$class}\">"  . PHP_EOL . 
         ($title ? "<h2>" . ($url ? $this->renderLink($url, $title) : $title) . "</h2>" : "") . PHP_EOL . 
         (is_array($content) ? $this->renderList($content) : $content . PHP_EOL) .
       "</article>" . PHP_EOL;

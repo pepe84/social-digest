@@ -1,0 +1,35 @@
+h2 { 
+  background-color: #999; 
+  color: #fff; 
+  padding: 4px 10px; 
+}
+  h2 a { 
+    display: block; 
+    color: #fff; 
+    text-decoration: none; 
+  }
+  h2 a:hover { 
+    color: #eee;
+  }
+ul { 
+  list-style-type: none; 
+  margin: 0; 
+  padding: 0 10px; 
+}
+ul.depth1 { 
+  padding-left: 24px; 
+}
+  li { 
+    margin: 0; 
+    border-bottom: 1px solid #eee; 
+    padding: 6px 0px; 
+  }
+footer { 
+  margin-top: 24px; 
+  border-top: 4px solid #999; 
+  padding-top: 20px; 
+}
+ .events li.depth0-item, 
+ .tweets li.depth0-item {
+   font-weight: bold;
+ }
