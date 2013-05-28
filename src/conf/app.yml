@@ -16,8 +16,9 @@ app:
     max: 20
     interval: "2 weeks"
     author: 1
-    date: 1
     category: 0
+    date: 1
+    reverse: 0
 
   # Twitter section
   # - Tag and url are optional

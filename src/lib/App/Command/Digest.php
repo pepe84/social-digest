@@ -1,7 +1,6 @@
 <?php
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -84,15 +83,15 @@ class App_Command_Digest extends Command
     // Default filters
     $defaultMax = App_Registry::config()->get('app.blogs.max');
     $defaultInt = App_Registry::config()->get('app.blogs.interval');
-
+    
     // Default data
     $defaultTit = App_Registry::config()->get('app.blogs.title');
     $defaultUrl = App_Registry::config()->get('app.blogs.url');
     
     // Default flags
     $defaultAut = App_Registry::config()->get('app.blogs.author');
-    $defaultDat = App_Registry::config()->get('app.blogs.date');
     $defaultCat = App_Registry::config()->get('app.blogs.category');
+    $defaultDat = App_Registry::config()->get('app.blogs.date');
 
     foreach (App_Registry::config()->get('blogs') as $name => $section) {
       
@@ -109,11 +108,12 @@ class App_Command_Digest extends Command
 
       // Optional flags
       $aut = App_Registry::utils()->getArrayValue($section, 'author', $defaultAut);
-      $dat = App_Registry::utils()->getArrayValue($section, 'date', $defaultDat);
       $cat = App_Registry::utils()->getArrayValue($section, 'category', $defaultCat);
-
+      $dat = App_Registry::utils()->getArrayValue($section, 'date', $defaultDat);
+      
       // Data
       $posts = array();
+      $inc = 0;
       
       // Read feeds
       foreach ($section['sources'] as $author => $blog) {
@@ -141,19 +141,21 @@ class App_Command_Digest extends Command
             $start = App_Registry::utils()->getDateSub($today, $int);
 
             if ($pubDateTime >= $start) {
-              // Using suffix to avoid key overriding
-              $date = App_Registry::view()->renderDate($pubDateTime);
-              $iKey = "{$post->pubDate}#$count";
-              $item = ($aut && $cat ? "[$author]" : "") . ($dat ? "[$date]" : "") . " {$post->title} - " . 
+              // Construct info
+              $item = ($dat ? "[" . App_Registry::view()->renderDate($pubDateTime) . "]" : "") . 
+                (!$aut ? "[$author]" : "") . " {$post->title} - " . 
                 App_Registry::view()->renderLink(App_Registry::service()->getBitlyUrl($post->link));
+              // Using suffix to avoid key overriding
+              $dateKey = $this->_getDateKey($pubDateTime) . "#{$inc}";
+              $inc++;
               // Categories?
               if ($cat) {
                 $category = "{$post->category}" ?: App_Registry::utils()->t("No category");
-                $posts[$category][$iKey] = $item;
+                $posts[$category][$dateKey] = $item;
               } else if ($aut) {
-                $posts[$author][$iKey] = $item;
+                $posts[$author][$dateKey] = $item;
               } else {
-                $posts[$iKey] = $item;
+                $posts[$dateKey] = $item;
               }
               if ($count++ === $max-1) {
                 break;
@@ -165,17 +167,20 @@ class App_Command_Digest extends Command
       } // end blogs foreach
 
       if (!empty($posts)) {
-
+        
+        // Optional date order
+        $rev = App_Registry::config()->get('app.blogs.reverse');
+        
         if ($cat || $aut) {
           // Order posts by category / author
           ksort($posts);
           // Order posts by date time
           foreach ($posts as &$subPosts) {
-            krsort($subPosts);
+            $rev ? krsort($subPosts) : ksort($subPosts);
           }
         } else {
           // Order posts by date time
-          krsort($posts);
+          $rev ? krsort($posts) : ksort($posts);
         }
         
         // Add results
@@ -208,16 +213,15 @@ class App_Command_Digest extends Command
         // Tweet status link
         $search = array('%username', '%id');
         $replac = array($tw->from_user, $tw->id_str);
-        $statusUrl = App_Registry::config()->get('services.twitter.urls.status');
-        $statusUrl = str_replace($search, $replac, $statusUrl);
+        $statusUrl = str_replace($search, $replac, App_Registry::config()->get('services.twitter.urls.status'));
         $user = App_Registry::view()->renderLink($statusUrl, "@{$tw->from_user}");
         // Tweet date
         $dateTime = $tw->created_at;
-        $dateKey = date_format(new DateTime($dateTime), 'Y-m-d');
+        $dateKey = $this->_getDateKey($dateTime);
         // Add result
         $this->results[self::TYPE_TWEET][$dateKey][] = "[$user] " . App_Registry::view()->renderTweet($tw->text);
         // Store days hashmap
-        $this->mapDate($dateTime);
+        $this->_mapDate($dateTime);
         // Check max limit
         if ($count++ === $max-1) {
           break;
@@ -250,7 +254,7 @@ class App_Command_Digest extends Command
                 . App_Registry::view()->renderLink(App_Registry::service()->getBitlyUrl($event->htmlLink));
               $count++;
               // Store days hashmap
-              $this->mapDate($dateTime);
+              $this->_mapDate($dateTime);
             }
           }
         } else {
@@ -364,19 +368,24 @@ class App_Command_Digest extends Command
     }
   }
   
-  public function mapDate($date)
-  {
-    $date = is_a($date, 'DateTime') ? $date : new DateTime($date);
-    $hash = date_format($date, 'Y-m-d');
-    
-    if (!isset($this->_datesMap[$hash])) {
-      $this->_datesMap[$hash] = App_Registry::view()->renderDate($date, true, false, true);
-    }
-  }
-  
   public function sendMail()
   {
     $command = new App_Command_Mail();
     $command->send();
+  }
+  
+  protected function _getDateKey($date)
+  {
+    $date = is_a($date, 'DateTime') ? $date : new DateTime($date);
+    return date_format($date, 'Y-m-d');
+  }
+  
+  protected function _mapDate($date)
+  {
+    $hash = $this->_getDateKey($date);
+    
+    if (!isset($this->_datesMap[$hash])) {
+      $this->_datesMap[$hash] = App_Registry::view()->renderDate($date, true, false, true);
+    }
   }
 }
