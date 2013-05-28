@@ -83,6 +83,7 @@ class App_Command_Digest extends Command
     // Default filters
     $defaultMax = App_Registry::config()->get('app.blogs.max');
     $defaultInt = App_Registry::config()->get('app.blogs.interval');
+    $defaultTag = App_Registry::config()->get('app.blogs.tag');
     
     // Default data
     $defaultTit = App_Registry::config()->get('app.blogs.title');
@@ -98,10 +99,10 @@ class App_Command_Digest extends Command
       App_Registry::log()->info("Starting $name section...");
       
       // Optional filters
-      $tag = App_Registry::utils()->getArrayValue($section, 'tag');
       $max = App_Registry::utils()->getArrayValue($section, 'max', $defaultMax);
       $int = App_Registry::utils()->getArrayValue($section, 'interval', $defaultInt);
-
+      $tag = App_Registry::utils()->getArrayValue($section, 'tag', $defaultTag);
+      
       // Optional data
       $tit = App_Registry::utils()->getArrayValue($section, 'title', $defaultTit);
       $url = App_Registry::utils()->getArrayValue($section, 'url', $defaultUrl);
