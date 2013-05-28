@@ -131,11 +131,11 @@ class App_Command_Digest extends Command
           $count = 0;
           // Get author from RSS information
           if (is_numeric($author)) {
-            $elem = isset($resp->title) ? $resp->title : $resp->channel->title;
-            $author = trim("{$elem}");
+            $elem = $resp->channel->title ?: $resp->title ?: "";
+            $author = trim("{$elem}") ?: App_Registry::utils()->t("No author");
           }
           // Parse feed
-          foreach (isset($resp->entry) ? $resp->entry : $resp->channel->item as $post) {
+          foreach ($resp->channel->item ?: $resp->entry ?: array() as $post) {
             // Check time interval
             $pubDateTime = new DateTime($post->pubDate);
             $start = App_Registry::utils()->getDateSub($today, $int);
@@ -144,7 +144,7 @@ class App_Command_Digest extends Command
               // Construct info
               $item = ($dat ? "[" . App_Registry::view()->renderDate($pubDateTime) . "]" : "") . 
                 (!$aut ? "[$author]" : "") . " {$post->title} - " . 
-                App_Registry::view()->renderLink(App_Registry::service()->getBitlyUrl($post->link));
+                App_Registry::view()->renderLink(App_Registry::service()->getBitlyUrl("{$post->link}"));
               // Using suffix to avoid key overriding
               $dateKey = $this->_getDateKey($pubDateTime) . "#{$inc}";
               $inc++;
