@@ -39,10 +39,12 @@ class App_Command_Digest extends Command
     App_Registry::config()->init($this->_configPath);
     
     // Dependency injection
-    $filename = App_Registry::config()->get('app.output.file');
+    $filename = App_Registry::config()->get('app.output.file.path');
     App_Registry::output()->init($filename);
     App_Registry::output()->clear($filename);
     App_Registry::log()->setLogger($output);
+    $style = App_Registry::config()->get('app.output.style.inline');
+    App_Registry::view()->setInlineStyle($style ?: array());
     
     // Execute
     $this->results = array();
@@ -70,7 +72,7 @@ class App_Command_Digest extends Command
     
     $title = App_Registry::config()->get('app.title') . " ". date('d/m/Y');
     $mail  = App_Registry::config()->get('app.output.mail.enabled');
-    $full  = empty($mail) && App_Registry::config()->get('app.output.full');
+    $full  = empty($mail) && App_Registry::config()->get('app.output.file.full');
 
     $this->render($title, $full);
     
@@ -300,9 +302,9 @@ class App_Command_Digest extends Command
     // CSS style
     
     $stack = array(
-      App_Registry::config()->get('app.output.style'),
-      $this->_configPath . '/default.css',
-      $this->_defaultConfigPath . '/default.css'
+      App_Registry::config()->get('app.output.style.path'),
+      $this->_configPath . '/style.css',
+      $this->_defaultConfigPath . '/style.css'
     );
     
     foreach ($stack as $filepath) {

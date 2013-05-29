@@ -2,8 +2,32 @@
 
 class App_View 
 {
-  public function renderTag($tag, $html, array $attrs = array())
+  protected $_inlineStyle = array();
+  
+  public function getInlineStyle()
   {
+    return $this->_inlineStyle;
+  }
+  
+  public function setInlineStyle(array $inlineStyle)
+  {
+    $this->_inlineStyle = $inlineStyle;
+  }
+  
+  public function renderTag($tag, $html, $attrs = array())
+  {
+    if (!isset($attrs['style'])) {
+      $selectors = array(
+        $tag,
+        empty($attrs['class']) ? '*' : $tag . '.' . $attrs['class']
+      );
+      foreach ($selectors as $selector) {
+        if (isset($this->_inlineStyle[$selector])) {
+          $attrs['style'] = $this->_inlineStyle[$selector];
+        }
+      }
+    }
+    
     foreach ($attrs as $attr => $content) {
       $tag .= " $attr=\"$content\"";
     }
@@ -26,12 +50,12 @@ class App_View
     return $this->renderTag("h$h", $title);
   }
   
-  public function renderLink($url, $title = null)
+  public function renderLink($url, $title = null, array $attrs = array())
   {
-    return $this->renderTag('a', $title ?: $url, array(
+    return $this->renderTag('a', $title ?: $url, array_merge($attrs, array(
       'href' => $url,
       'target' => '_blank',
-    ));
+    )));
   }
 
   public function renderList($list, $depth = 0) 
@@ -55,7 +79,7 @@ class App_View
   public function renderArticle($content, $title = null, $url = null, $class = 'default')
   {
     $html = 
-      ($title ? $this->renderTitle($url ? $this->renderLink($url, $title) : $title, 2) : "") . PHP_EOL . 
+      ($title ? $this->renderTitle($url ? $this->renderLink($url, $title, array("class" => "article-link")) : $title, 2) : "") . PHP_EOL . 
       (is_array($content) ? $this->renderList($content) : $content . PHP_EOL);
     
     return $this->renderTag('article', $html, array(
