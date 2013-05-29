@@ -291,9 +291,9 @@ class App_Command_Digest extends Command
       // Title and credits
 
       App_Registry::output()->write(
-        "<header>" . PHP_EOL . 
-          "<h1>" . $title . "</h1>" . PHP_EOL . 
-        "</header>" . PHP_EOL
+        App_Registry::view()->renderHeader(
+          App_Registry::view()->renderTitle($title)
+        )
       );
     }
     
@@ -308,9 +308,7 @@ class App_Command_Digest extends Command
     foreach ($stack as $filepath) {
       if (file_exists($filepath)) {
         App_Registry::output()->write(
-          "<style>" . PHP_EOL . 
-          file_get_contents($filepath) . PHP_EOL . 
-          "</style>" . PHP_EOL
+          App_Registry::view()->renderTag('style', file_get_contents($filepath))
         );
         break;
       }
@@ -379,9 +377,9 @@ class App_Command_Digest extends Command
       });
       
       App_Registry::output()->write(
-        "<footer>" . PHP_EOL . 
-          App_Registry::view()->renderList($credits) . 
-        "</footer>"
+        App_Registry::view()->renderFooter(
+          App_Registry::view()->renderList($credits)
+        )
       );
     }
 

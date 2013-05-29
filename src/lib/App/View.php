@@ -2,6 +2,26 @@
 
 class App_View 
 {
+  public function renderTag($tag, $html)
+  {
+    return "<$tag>" . PHP_EOL . $html . PHP_EOL . "</$tag>" . PHP_EOL;
+  }
+  
+  public function renderHeader($html)
+  {
+    return $this->renderTag('header', $html);
+  }
+  
+  public function renderFooter($html)
+  {
+    return $this->renderTag('footer', $html);
+  }
+  
+  public function renderTitle($title, $h = 1)
+  {
+    return $this->renderTag("h$h", $title);
+  }
+  
   public function renderDate($date, $showDay = true, $showHour = false, $showWeekDay = false)
   {
     $date = is_a($date, 'DateTime') ? $date : new DateTime($date);
@@ -14,7 +34,7 @@ class App_View
   
   public function renderLink($url, $title = null)
   {
-    return "<a href='$url' target='_blank'>" . ($title ?: $url) . "</a>";
+    return "<a href=\"$url\" target=\"_blank\">" . ($title ?: $url) . "</a>";
   }
 
   public function renderList($list, $depth = 0) 
@@ -38,7 +58,7 @@ class App_View
   {
     return 
       "<article class=\"{$class}\">"  . PHP_EOL . 
-        ($title ? "<h2>" . ($url ? $this->renderLink($url, $title) : $title) . "</h2>" : "") . PHP_EOL . 
+        ($title ? $this->renderTitle($url ? $this->renderLink($url, $title) : $title, 2) : "") . PHP_EOL . 
         (is_array($content) ? $this->renderList($content) : $content . PHP_EOL) .
       "</article>" . PHP_EOL;
   }
