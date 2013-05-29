@@ -11,11 +11,14 @@ class App_Command_Digest extends Command
   const TYPE_TWEET = 'tweets';
   const TYPE_EVENT = 'events';
   
+  protected $_defaultConfigPath = null;
+  protected $_configPath = null;
   protected $_datesMap = array();
   protected $_results = array();
   
   protected function configure()
   {
+    // Command
     $this ->setName('run')
           ->setDescription('Social digest system (HTML)')
           ->addArgument(
@@ -23,21 +26,25 @@ class App_Command_Digest extends Command
             InputArgument::OPTIONAL,
             'Configuration files folder path'
           );
+    // Configuration
+    $this->_defaultConfigPath = __DIR__ . "/../../../conf";
   }
   
   protected function execute(InputInterface $input, OutputInterface $output)
   {
     // Get options
-    $path = $input->getArgument('config') ?: __DIR__ . "/../../../conf";
+    $this->_configPath = $input->getArgument('config') ?: $this->_defaultConfigPath;
     
     // Configue app
-    App_Registry::config()->init($path);
+    App_Registry::config()->init($this->_configPath);
     
     // Dependency injection
-    $filename = App_Registry::config()->get('app.output.file');
+    $filename = App_Registry::config()->get('app.output.file.path');
     App_Registry::output()->init($filename);
     App_Registry::output()->clear($filename);
     App_Registry::log()->setLogger($output);
+    $style = App_Registry::config()->get('app.output.style.inline');
+    App_Registry::view()->setInlineStyle($style ?: array());
     
     // Execute
     $this->results = array();
@@ -65,7 +72,7 @@ class App_Command_Digest extends Command
     
     $title = App_Registry::config()->get('app.title') . " ". date('d/m/Y');
     $mail  = App_Registry::config()->get('app.output.mail.enabled');
-    $full  = empty($mail) && App_Registry::config()->get('app.output.full');
+    $full  = empty($mail) && App_Registry::config()->get('app.output.file.full');
 
     $this->render($title, $full);
     
@@ -191,7 +198,8 @@ class App_Command_Digest extends Command
         $this->results[self::TYPE_POST] .= App_Registry::view()->renderArticle(
           $posts, 
           $tit, 
-          $url ? App_Registry::service()->getBitlyUrl($url) : null
+          $url ? App_Registry::service()->getBitlyUrl($url) : null,
+          self::TYPE_POST
         );
       }
     } // end sections foreach    
@@ -285,12 +293,29 @@ class App_Command_Digest extends Command
       // Title and credits
 
       App_Registry::output()->write(
-        "<header>" . PHP_EOL . 
-          "<h1>" . $title . "</h1>" . PHP_EOL . 
-        "</header>" . PHP_EOL
+        App_Registry::view()->renderHeader(
+          App_Registry::view()->renderTitle($title)
+        )
       );
     }
-
+    
+    // CSS style
+    
+    $stack = array(
+      App_Registry::config()->get('app.output.style.path'),
+      $this->_configPath . '/style.css',
+      $this->_defaultConfigPath . '/style.css'
+    );
+    
+    foreach ($stack as $filepath) {
+      if (file_exists($filepath)) {
+        App_Registry::output()->write(
+          App_Registry::view()->renderTag('style', file_get_contents($filepath))
+        );
+        break;
+      }
+    }
+    
     // Sections
     
     App_Registry::output()->write("<section>" . PHP_EOL);
@@ -322,7 +347,8 @@ class App_Command_Digest extends Command
         $content = App_Registry::view()->renderArticle(
           $orderedContent, 
           $tit, 
-          $url ? App_Registry::service()->getBitlyUrl($url) : null
+          $url ? App_Registry::service()->getBitlyUrl($url) : null,
+          $type
         );
         // Free memory
         unset($orderedContent);
@@ -353,9 +379,9 @@ class App_Command_Digest extends Command
       });
       
       App_Registry::output()->write(
-        "<footer>" . PHP_EOL . 
-          "<hr/>" . App_Registry::view()->renderList($credits) . 
-        "</footer>"
+        App_Registry::view()->renderFooter(
+          App_Registry::view()->renderList($credits)
+        )
       );
     }
 
