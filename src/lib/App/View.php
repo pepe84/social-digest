@@ -35,16 +35,6 @@ class App_View
     return "<$tag>" . PHP_EOL . $html . PHP_EOL . "</$tag>" . PHP_EOL;
   }
   
-  public function renderHeader($html)
-  {
-    return $this->renderTag('header', $html);
-  }
-  
-  public function renderFooter($html)
-  {
-    return $this->renderTag('footer', $html);
-  }
-  
   public function renderTitle($title, $h = 1)
   {
     return $this->renderTag("h$h", $title);
@@ -76,13 +66,13 @@ class App_View
     ));
   }
   
-  public function renderArticle($content, $title = null, $url = null, $class = 'default')
+  public function renderSection($content, $title = null, $url = null, $class = 'default')
   {
     $html = 
-      ($title ? $this->renderTitle($url ? $this->renderLink($url, $title, array("class" => "article-link")) : $title, 2) : "") . PHP_EOL . 
+      ($title ? $this->renderTitle($url ? $this->renderLink($url, $title, array("class" => "section-link")) : $title, 2) : "") . PHP_EOL . 
       (is_array($content) ? $this->renderList($content) : $content . PHP_EOL);
     
-    return $this->renderTag('article', $html, array(
+    return $this->renderTag('div', $html, array(
       'class' => $class
     ));
   }

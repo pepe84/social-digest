@@ -52,11 +52,10 @@ app:
     style:
       inline:
         "h2": "background-color: #999; color: #fff; padding: 4px 10px;"
-        "a.article-link": "display: block; color: #fff; text-decoration: none;"
+        "a.section-link": "display: block; color: #fff; text-decoration: none;"
         "ul": "list-style-type: none; margin: 0; padding: 0 14px;"
         "li": "margin: 0; border-bottom: 1px solid #eee; padding: 6px 0px;"
-        "li": "margin: 0; border-bottom: 1px solid #eee; padding: 6px 0px;"
-        "footer": "margin-top: 24px; border-top: 4px solid #999; padding-top: 20px;"
+        "div.credits": "margin-top: 24px; border-top: 4px solid #999; padding-top: 20px;"
     # Optional mail delivery, very useful if you want to send content to a mailing 
     # list or to upload a new WP post (http://jetpack:me/support/post-by-email)
     # Note: If is enabled, full output is automatically disabled

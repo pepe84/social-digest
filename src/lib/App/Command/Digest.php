@@ -195,7 +195,7 @@ class App_Command_Digest extends Command
         if (!isset($this->results[self::TYPE_POST])) {
           $this->results[self::TYPE_POST] = "";
         }
-        $this->results[self::TYPE_POST] .= App_Registry::view()->renderArticle(
+        $this->results[self::TYPE_POST] .= App_Registry::view()->renderSection(
           $posts, 
           $tit, 
           $url ? App_Registry::service()->getBitlyUrl($url) : null,
@@ -293,9 +293,7 @@ class App_Command_Digest extends Command
       // Title and credits
 
       App_Registry::output()->write(
-        App_Registry::view()->renderHeader(
-          App_Registry::view()->renderTitle($title)
-        )
+        App_Registry::view()->renderTitle($title)
       );
     }
     
@@ -318,7 +316,6 @@ class App_Command_Digest extends Command
     
     // Sections
     
-    App_Registry::output()->write("<section>" . PHP_EOL);
     foreach ($this->results as $type => $content) {
       // Default
       if (is_array($content)) {
@@ -343,8 +340,9 @@ class App_Command_Digest extends Command
             unset($content[$day]);
           }
         }
+        
         // Render content
-        $content = App_Registry::view()->renderArticle(
+        $content = App_Registry::view()->renderSection(
           $orderedContent, 
           $tit, 
           $url ? App_Registry::service()->getBitlyUrl($url) : null,
@@ -358,7 +356,6 @@ class App_Command_Digest extends Command
       // Free memory
       unset($content);
     }
-    App_Registry::output()->write("</section>" . PHP_EOL);
 
     // Footer
 
@@ -379,9 +376,7 @@ class App_Command_Digest extends Command
       });
       
       App_Registry::output()->write(
-        App_Registry::view()->renderFooter(
-          App_Registry::view()->renderList($credits)
-        )
+        App_Registry::view()->renderSection($credits, null, null, 'credits')
       );
     }
 
