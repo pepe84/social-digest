@@ -4,42 +4,47 @@
 
 app:
   # Main info
-  title: "My title"
-  description: "My description"
-
-  # News sections (default config)
-  # - Title and url are optional
-  # - Max is the maximum number of posts for each blog
-  # - Flags author, date and category could be overriden too
+  title: "Notícies dels diaris"
+  description: "Portada"
+  
+  # Calendar section
+  # - url is optional
+  events:
+    enabled: 0
+    # Info
+    title: "Agenda"
+    # Filter
+    interval: "1 week"
+    
+  # News sections default config (could be overriden at blogs.yml)
+  # - url and tag are optional
+  # - max is the maximum number of allowed posts for each blog
   blogs:
     enabled: 1
-    max: 20
-    interval: "2 weeks"
-    author: 1
+    # Filter
+    max: 5
+    interval: "10 days"
+    # Group by
+    author: 0
     category: 0
-    date: 1
+    # Sort by
+    date: 0
     reverse: 0
-
+    
   # Twitter section
-  # - Tag and url are optional
+  # - url and tag are optional
   tweets:
-    enabled: 1
+    enabled: 0
+    # Info
+    title: "Piulades"
+    # Filter
     max: 20
-    tag: "#news"
-    title: "Tweets"
-
-  # Calendar section
-  # - Url is optional
-  events:
-    enabled: 1
-    interval: "1 week"
-    title: "Agenda"
-    url: "http://calendar.net"
+    tag: "#noticies"
 
   # More info
   credits: 
-    - 'Builded by <a href="https://github.com/pepe84/social-digest">social-digest system</a>'
-
+    - 'Builded by <a href="https://github.com/pepe84/social-digest">social-digest</a> system'
+    
   # Digest output
   output:
     # File to generate
@@ -47,36 +52,34 @@ app:
       # Full version includes html, head and body tags
       full: 1
       # Destination
-      path: "digest.html"
+      path: "./news.html"
     # CSS style, inline or path (optional)
     style:
       inline:
         "h2": "background-color: #999; color: #fff; padding: 4px 10px;"
         "a.section-link": "display: block; color: #fff; text-decoration: none;"
         "ul": "list-style-type: none; margin: 0; padding: 0 14px;"
-        "li": "margin: 0; border-bottom: 1px solid #eee; padding: 6px 0px;"
+        "li": "margin: 0; border-bottom: 1px solid #eee; padding: 4px 0px;"
         "div.credits": "margin-top: 24px; border-top: 4px solid #999; padding-top: 20px;"
     # Optional mail delivery, very useful if you want to send content to a mailing 
-    # list or to upload a new WP post (http://jetpack:me/support/post-by-email)
+    # list or to upload a new WP post (http://jetpack.me/support/post-by-email)
     # Note: If is enabled, full output is automatically disabled
     mail:
       enabled: 0
-      to: "xxx@post.wordpress.com"
-      from: "xxx@gmail.com"
-      bcc: "xxx@googlegroups.com"
-      append: "<p style='display:none'>[category Info]</p>"
-
+      from:   "u1@s1.me"
+      to:     "u2@s2.me"
+      
 ########
 # Mail #
 ########
 
-#mail:
-#  host:       localhost
-#  port:       25
-#  username:   your_username
-#  password:   your_password
-#  encryption: ssl
-
+mail:
+  host:       "localhost"
+  port:       25
+  username:   "YOUR-USERNAME"
+  password:   "YOUR-PASSWORD"
+  encryption: "ssl"
+  
 ############
 # Services #
 ############
@@ -96,9 +99,9 @@ services:
   twitter:
     urls:
       profile: "https://twitter.com/%username"
-      status: "https://twitter.com/%username/status/%id"
-      search: "https://twitter.com/search?q=%query"
-
+      status:  "https://twitter.com/%username/status/%id"
+      search:  "https://twitter.com/search?q=%query"
+  
 ################
 # Translations #
 ################

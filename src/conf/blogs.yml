@@ -3,22 +3,29 @@
 #########
 
 blogs:
-
-  # News section 1
-  section1:
-    title: "International news"
-    url: http://www.bbc.co.uk/news/world/
-    max: 100
-    author: 0
-    categories: 1
+  -
+    title: "Medis de comunicació tradicionals"
     sources:
-      - http://www.bbc.co.uk/
-
-  # News section 2
-  section2:
-    title: "National news"
-    tag: "#uk"
+      "El País": http://ep00.epimg.net/rss/elpais/portada.xml
+      "El Periódico": http://www.elperiodico.com/es/rss/rss_portada.xml
+      "El Mundo": http://estaticos.elmundo.es/elmundo/rss/portada.xml
+      "La Vanguardia": http://feeds.feedburner.com/lavanguardia/home
+      "Público": http://www.publico.es/rss/
+      "Ara": http://www.ara.cat/rss/
+      "El Punt Avui": http://www.elpuntavui.cat/barcelona/nacional/portada/portada/pais.feed?limitstart=&type=rss
+  -
+    title: "Medis de comunicació alternatius"
     sources:
-      - http://www.bbc.co.uk/
-      - http://www.bbc.co.uk/
-      - http://www.bbc.co.uk/
+      "Setmanari La Directa": http://directa.cat/rss/noticies
+      "La Marea": http://feeds.feedburner.com/lamarea/jUvB
+      "Periódico Diagonal": http://www.diagonalperiodico.net/rss/portada.xml
+      "El Diario": http://www.eldiario.es/rss/
+      "La información": http://rss.lainformacion.com/
+      "InfoLibre": http://www.infolibre.es/index.php/mod.portadas/mem.rss
+      "Semanario Es Hora": http://eshorasemanario.wordpress.com
+      "El Triangle": http://www.eltriangle.eu/cat/rss/ultimes_noticies_001.xml
+  -
+    title: "Medis de comunicació col·laboratius"
+    sources:
+      "Menéame": http://www.meneame.net/rss2.php?meta=0
+      "Escráchame": http://escrachame.elmundoencifras.com/rss.php?category=&status=&group=
