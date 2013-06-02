@@ -28,11 +28,13 @@ class App_View
       }
     }
     
+    $inline = "";
+    
     foreach ($attrs as $attr => $content) {
-      $tag .= " $attr=\"$content\"";
+      $inline .= " $attr=\"$content\"";
     }
     
-    return "<$tag>" . PHP_EOL . $html . PHP_EOL . "</$tag>" . PHP_EOL;
+    return "<$tag $inline>" . PHP_EOL . $html . PHP_EOL . "</$tag>" . PHP_EOL;
   }
   
   public function renderTitle($title, $h = 1)
