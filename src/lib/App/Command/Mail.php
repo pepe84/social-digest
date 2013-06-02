@@ -28,10 +28,6 @@ class App_Command_Mail extends Command
     // Get options
     $path = $input->getArgument('config');
     
-    if (empty($path) || $path === 'default') {
-      $path = __DIR__ . "/../../../conf";
-    }
-    
     // Configue app
     App_Registry::config()->init($path);
     

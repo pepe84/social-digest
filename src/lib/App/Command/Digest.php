@@ -11,8 +11,6 @@ class App_Command_Digest extends Command
   const TYPE_TWEET = 'tweets';
   const TYPE_EVENT = 'events';
   
-  protected $_defaultConfigPath = null;
-  protected $_configPath = null;
   protected $_datesMap = array();
   protected $_results = array();
   
@@ -24,19 +22,17 @@ class App_Command_Digest extends Command
           ->addArgument(
             'config',
             InputArgument::OPTIONAL,
-            'Configuration files folder path'
+            'Configuration files folder path or default'
           );
-    // Configuration
-    $this->_defaultConfigPath = __DIR__ . "/../../../conf";
   }
   
   protected function execute(InputInterface $input, OutputInterface $output)
   {
     // Get options
-    $this->_configPath = $input->getArgument('config') ?: $this->_defaultConfigPath;
+    $path = $input->getArgument('config');
     
     // Configue app
-    App_Registry::config()->init($this->_configPath);
+    App_Registry::config()->init($path);
     
     // Dependency injection
     $filename = App_Registry::config()->get('app.output.file.path');
@@ -301,8 +297,8 @@ class App_Command_Digest extends Command
     
     $stack = array(
       App_Registry::config()->get('app.output.style.path'),
-      $this->_configPath . '/style.css',
-      $this->_defaultConfigPath . '/style.css'
+      App_Registry::config()->getPath() . '/style.css',
+      App_Registry::config()->getDefaultPath() . '/style.css'
     );
     
     foreach ($stack as $filepath) {

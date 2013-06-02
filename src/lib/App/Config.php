@@ -4,6 +4,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class App_Config 
 {
+  static protected $_path = null;
   static protected $_config = array();
   
   /**
@@ -12,6 +13,11 @@ class App_Config
    */
   static public function init($path)
   {
+    // Default folder?
+    if (empty($path) || $path === 'default') {
+      $path = self::getDefaultPath();
+    }
+    
     // Set configuration
     foreach(array('app', 'blogs', 'calendars') as $cnf) {
       $file = "$path/$cnf.yml";
@@ -20,6 +26,27 @@ class App_Config
         self::_setConfig($config);
       }
     }
+    
+    // Store path
+    self::$_path = $path;
+  }
+  
+  /**
+   * 
+   * @return string
+   */
+  static public function getPath()
+  {
+    return self::$_path;
+  }
+  
+  /**
+   * 
+   * @return string
+   */
+  static public function getDefaultPath()
+  {
+    return __DIR__ . "/../../conf";
   }
   
   /**
