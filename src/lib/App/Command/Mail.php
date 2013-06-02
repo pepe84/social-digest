@@ -14,7 +14,7 @@ class App_Command_Mail extends Command
           ->addArgument(
             'config',
             InputArgument::OPTIONAL,
-            'Configuration files folder path'
+            'Configuration files folder path or default'
           )
           ->addArgument(
             'addresses',
@@ -26,13 +26,17 @@ class App_Command_Mail extends Command
   protected function execute(InputInterface $input, OutputInterface $output)
   {
     // Get options
-    $path = $input->getArgument('config') ?: __DIR__ . "/../../../conf";
+    $path = $input->getArgument('config');
+    
+    if (empty($path) || $path === 'default') {
+      $path = __DIR__ . "/../../../conf";
+    }
     
     // Configue app
     App_Registry::config()->init($path);
     
     // Dependency injection
-    $filename = App_Registry::config()->get('app.output.file');
+    $filename = App_Registry::config()->get('app.output.file.path');
     App_Registry::output()->init($filename);
     App_Registry::log()->setLogger($output);
     
