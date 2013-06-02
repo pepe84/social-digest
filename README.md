@@ -36,7 +36,7 @@ Parameter `[config]` is optional and it's useful to set a custom configuration f
 
 send HTML digest by mail
 
-    social-digest.php run [config] [address1] .. [addressN]
+    social-digest.php mail [config] [address1] .. [addressN]
 
 Parameter `[config]` is similar to run command one and parameters `[address1] .. [addressN]` have a structure "header:mail1,..,mailN" where "header" could be "from", "to", "cc" or "bcc". Full example: `from:mail1 to:mail2,mail3 cc:mail4 bcc:mail5,mail6`.
 
