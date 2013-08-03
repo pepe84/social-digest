@@ -18,15 +18,13 @@ class App_Config
       $path = self::getDefaultPath();
     }
     
-    // Set configuration
-    foreach(array('app', 'blogs', 'calendars') as $cnf) {
-      $file = "$path/$cnf.yml";
-      if (file_exists($file)) {
-        $config = Yaml::parse($file);
-        self::_setConfig($config);
+    // Set configuration (files by default)
+    foreach(array('app', 'blogs', 'calendars') as $conf) {
+      if (!self::_setYamlConfig("$path/$conf.yml")) {
+        self::_setDbConfig($conf);
       }
     }
-    
+        
     // Store path
     self::$_path = $path;
   }
@@ -47,6 +45,67 @@ class App_Config
   static public function getDefaultPath()
   {
     return __DIR__ . "/../../conf";
+  }
+  
+  /**
+   * Add config using YAML files
+   * 
+   * @param string $file
+   * @return boolean
+   */
+  static protected function _setYamlConfig($file)
+  {
+    if (file_exists($file)) {
+      self::_setConfig(Yaml::parse($file));
+      return true;
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Add config using DB
+   * [Be careful with circular dependency!!!]
+   * 
+   * @param string $conf
+   * @return boolean
+   */
+  static protected function _setDbConfig($conf)
+  {
+    $dbConf = self::get("db.conf.$conf");
+    $table = $dbConf['table'];
+    $cols  = $dbConf['columns'];
+    
+    $query = App_Registry::db()->query($table, $cols);
+    
+    $data = array();
+    while ($row = $query->fetch()) {
+      if (!empty($row[$cols['src']])) {
+        // Mandatory column
+        $src = $row[$cols['src']];
+        // Optional grouping by category
+        if (isset($cols['cat'])) {
+          // Set category
+          $cat = empty($row[$cols['cat']]) ? '???' : $row[$cols['cat']];
+          $data[$cat]['title'] = $cat;
+          // Optional custom name
+          if (!empty($row[$cols['key']])) {
+            $data[$cat]['sources'][$row[$cols['key']]] = $src;
+          } else {
+            $data[$cat]['sources'][] = $src;
+          }
+        } else {
+          $data[] = $src;
+        }
+      }
+    }
+    
+    if (!empty($data)) {
+      self::_setConfig(array($conf => $data));
+      return true;
+    }
+    
+    return false;
   }
   
   /**
