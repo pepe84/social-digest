@@ -14,13 +14,15 @@ Distributed digest system.
 
 ## How it works? ##
 
-There are two available commands (`run` and `mail`) that require three configuration files:
+There are two available commands (`run` and `mail`) that require a previous configuration to work:
 
-* `app.yml`: info, sections, filters, apis, mail server, translations
-* `blogs.yml`: feeds list (by section)
-* `calendars.yml`: calendars list
+* `app.yml` file: details, sections, filters, apis, mail server, translations, database connection, etc
+* `blogs.yml` file or `database` config: feeds list (by section)
+* `calendars.yml` file or `database` config: calendars list
 
-Those files could be inside the default configuration folder or in a custom one (see commands section). The initial default files explain how to setup the app (see file comments).
+The app searches for configuration files at `/conf` folder by default. This path could be overridden setting a custom one, as described below at commands section, and is possible to store `feeds` / `calendars` lists in a database instead of using files. See `db` configuration at `app.yml` example file for more details.
+
+The initial example files, at `/conf` folder, are a good start to see how to setup a custom app.
 
 ## Commands ##
 
