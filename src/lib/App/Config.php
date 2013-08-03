@@ -19,7 +19,7 @@ class App_Config
     }
     
     // Set configuration (files by default)
-    foreach(array('app', 'blogs', 'calendars') as $conf) {
+    foreach(array('app', 'feeds', 'calendars') as $conf) {
       if (!self::_setYamlConfig("$path/$conf.yml")) {
         self::_setDbConfig($conf);
       }

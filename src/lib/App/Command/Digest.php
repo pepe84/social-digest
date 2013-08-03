@@ -7,7 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class App_Command_Digest extends Command
 {
-  const TYPE_POST  = 'blogs';
+  const TYPE_POST  = 'news';
   const TYPE_TWEET = 'tweets';
   const TYPE_EVENT = 'events';
   
@@ -50,8 +50,8 @@ class App_Command_Digest extends Command
       $this->getEvents($today);
     }
 
-    if (App_Registry::config()->get('app.blogs.enabled')) {
-      $this->getFeeds($today);
+    if (App_Registry::config()->get('app.news.enabled')) {
+      $this->getNews($today);
     }
     
     if (App_Registry::config()->get('app.tweets.enabled')) {
@@ -79,53 +79,41 @@ class App_Command_Digest extends Command
   
   // Aux methods
   
-  public function getFeeds($today)
+  public function getNews($today)
   {
-    App_Registry::log()->info("Obtaining BLOGS posts...");
+    App_Registry::log()->info("Obtaining FEEDS...");
     
-    // Default filters
-    $defaultMax = App_Registry::config()->get('app.blogs.max');
-    $defaultInt = App_Registry::config()->get('app.blogs.interval');
-    $defaultTag = App_Registry::config()->get('app.blogs.tag');
+    // Default config
+    $default = App_Registry::config()->get('app.news');
     
-    // Default data
-    $defaultTit = App_Registry::config()->get('app.blogs.title');
-    $defaultUrl = App_Registry::config()->get('app.blogs.url');
-    
-    // Default flags
-    $defaultAut = App_Registry::config()->get('app.blogs.author');
-    $defaultCat = App_Registry::config()->get('app.blogs.category');
-    $defaultDat = App_Registry::config()->get('app.blogs.date');
-
-    foreach (App_Registry::config()->get('blogs') as $name => $section) {
+    foreach (App_Registry::config()->get('feeds') as $name => $section) {
       
-      App_Registry::log()->info("Starting $name section...");
+      App_Registry::log()->info("Starting section $name...");
       
       // Optional filters
-      $max = App_Registry::utils()->getArrayValue($section, 'max', $defaultMax);
-      $int = App_Registry::utils()->getArrayValue($section, 'interval', $defaultInt);
-      $tag = App_Registry::utils()->getArrayValue($section, 'tag', $defaultTag);
+      $max = App_Registry::utils()->getArrayValue($section, 'max', @$default['max']);
+      $int = App_Registry::utils()->getArrayValue($section, 'interval', @$default['interval']);
+      $tag = App_Registry::utils()->getArrayValue($section, 'tag', @$default['tag']);
       
       // Optional data
-      $tit = App_Registry::utils()->getArrayValue($section, 'title', $defaultTit);
-      $url = App_Registry::utils()->getArrayValue($section, 'url', $defaultUrl);
+      $tit = App_Registry::utils()->getArrayValue($section, 'title', @$default['title']);
+      $url = App_Registry::utils()->getArrayValue($section, 'url', @$default['url']);
 
       // Optional flags
-      $aut = App_Registry::utils()->getArrayValue($section, 'author', $defaultAut);
-      $cat = App_Registry::utils()->getArrayValue($section, 'category', $defaultCat);
-      $dat = App_Registry::utils()->getArrayValue($section, 'date', $defaultDat);
+      $aut = App_Registry::utils()->getArrayValue($section, 'author', @$default['author']);
+      $dat = App_Registry::utils()->getArrayValue($section, 'date', @$default['date']);
       
       // Data
       $posts = array();
       $inc = 0;
       
       // Read feeds
-      foreach ($section['sources'] as $author => $blog) {
+      foreach ($section['sources'] as $author => $src) {
         try {
           // Structure "url@type" (type is optional)
-          $blog = explode('@', $blog);
-          $resp = App_Registry::service()->getRss($blog[0], $tag, @$blog[1]);
-          App_Registry::log()->debug("Obtaining rss feed from " . $blog[0]);
+          $src = explode('@', $src);
+          $resp = App_Registry::service()->getRss($src[0], $tag, @$src[1]);
+          App_Registry::log()->debug("Obtaining rss feed from " . $src[0]);
         } catch (Exception $e) {
           App_Registry::log()->err($e->getMessage());
         }
@@ -153,10 +141,7 @@ class App_Command_Digest extends Command
               $dateKey = $this->_getDateKey($pubDateTime) . "#{$inc}";
               $inc++;
               // Categories?
-              if ($cat) {
-                $category = "{$post->category}" ?: App_Registry::utils()->t("No category");
-                $posts[$category][$dateKey] = $item;
-              } else if ($aut) {
+              if ($aut) {
                 $posts[$author][$dateKey] = $item;
               } else {
                 $posts[$dateKey] = $item;
@@ -168,14 +153,14 @@ class App_Command_Digest extends Command
           }
         }
 
-      } // end blogs foreach
+      } // end feeds foreach
 
       if (!empty($posts)) {
         
         // Optional date order
-        $rev = App_Registry::config()->get('app.blogs.reverse');
+        $rev = @$default['reverse'];
         
-        if ($cat || $aut) {
+        if ($aut) {
           // Order posts by category / author
           ksort($posts);
           // Order posts by date time

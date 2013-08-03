@@ -1,8 +1,8 @@
 #########
-# Blogs #
+# Feeds #
 #########
 
-blogs:
+feeds:
   -
     title: "Medis de comunicació tradicionals"
     sources:

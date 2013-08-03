@@ -17,7 +17,7 @@ Distributed digest system.
 There are two available commands (`run` and `mail`) that require a previous configuration to work:
 
 * `app.yml` file: details, sections, filters, apis, mail server, translations, database connection, etc
-* `blogs.yml` file or `database` config: feeds list (by section)
+* `feeds.yml` file or `database` config: feeds list (by section)
 * `calendars.yml` file or `database` config: calendars list
 
 The app searches for configuration files at `/conf` folder by default. This path could be overridden setting a custom one, as described below at commands section, and is possible to store `feeds` / `calendars` lists in a database instead of using files. See `db` configuration at `app.yml` example file for more details.

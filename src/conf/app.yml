@@ -16,19 +16,18 @@ app:
     # Filter
     interval: "1 week"
     
-  # News sections default config (could be overriden at blogs.yml)
+  # News sections default config (could be overriden at feeds.yml)
   # - url and tag are optional
-  # - max is the maximum number of allowed posts for each blog
-  blogs:
+  # - max is the maximum number of allowed posts for each feed
+  news:
     enabled: 1
     # Filter
     max: 5
     interval: "10 days"
     # Group by
-    author: 0
-    category: 0
-    # Sort by
+    author: 1
     date: 0
+    # Sort by
     reverse: 0
     
   # Twitter section
@@ -85,7 +84,7 @@ db:
   # Configuration
   conf:
     # News sources
-    blogs:
+    feeds:
       table: "users"
       columns:
         # Mandatory
@@ -93,7 +92,7 @@ db:
         cat:  "category"
         # Optional
         key:  "name"
-    # Calendar sources
+    # Events sources
     calendars:
       table:  "users"
       columns:

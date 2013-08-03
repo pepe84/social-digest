@@ -2,7 +2,7 @@
 
 class App_Service
 {
-  // Supported blog services
+  // Supported feed services
   const FEED_WP = 'wordpress';
   const FEED_BG = 'blogger';
   const FEED_BS = 'blogspot';
