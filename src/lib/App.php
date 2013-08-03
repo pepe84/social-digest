@@ -14,6 +14,7 @@ class App
     
     $loader->registerNamespaces(array(
         'Symfony' => __DIR__,
+        'Doctrine' => __DIR__,
     ));
     
     $loader->registerPrefixes(array(
