@@ -69,6 +69,37 @@ app:
       from:   "u1@s1.me"
       to:     "u2@s2.me"
       
+###############################
+# Database sources (optional) #
+###############################
+
+db:
+  # Connection
+  conn:
+    dbname:   "mydb"
+    user:     "tester"
+    password: "secret"
+    host:     "localhost"
+    driver:   "pdo_mysql"
+    charset:  "utf8"
+  # Configuration
+  conf:
+    # News sources
+    blogs:
+      table: "users"
+      columns:
+        # Mandatory
+        src:  "blog"
+        cat:  "category"
+        # Optional
+        key:  "name"
+    # Calendar sources
+    calendars:
+      table:  "users"
+      columns:
+        # Mandatory
+        src:  "calendar"
+
 ########
 # Mail #
 ########
