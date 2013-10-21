@@ -20,11 +20,11 @@ class App_Config
     
     // Set configuration (files by default)
     foreach(array('app', 'feeds', 'calendars') as $conf) {
-      if (!self::_setYamlConfig("$path/$conf.yml")) {
-        self::_setDbConfig($conf);
-      }
+      // Allowing both: files and db
+      self::_setYamlConfig("$path/$conf.yml");
+      self::_setDbConfig($conf);
     }
-        
+    
     // Store path
     self::$_path = $path;
   }
@@ -73,36 +73,39 @@ class App_Config
   static protected function _setDbConfig($conf)
   {
     $dbConf = self::get("db.conf.$conf");
-    $table = $dbConf['table'];
-    $cols  = $dbConf['columns'];
     
-    $query = App_Registry::db()->query($table, $cols);
-    
-    $data = array();
-    while ($row = $query->fetch()) {
-      if (!empty($row[$cols['src']])) {
-        // Mandatory column
-        $src = $row[$cols['src']];
-        // Optional grouping by category
-        if (isset($cols['cat'])) {
-          // Set category
-          $cat = empty($row[$cols['cat']]) ? '???' : $row[$cols['cat']];
-          $data[$cat]['title'] = $cat;
-          // Optional custom name
-          if (!empty($row[$cols['key']])) {
-            $data[$cat]['sources'][$row[$cols['key']]] = $src;
+    if (!empty($dbConf)) {
+      // Get DB info
+      $table = $dbConf['table'];
+      $cols  = $dbConf['columns'];
+
+      $query = App_Registry::db()->query($table, $cols);
+
+      $data = array();
+      while ($row = $query->fetch()) {
+        if (!empty($row[$cols['src']])) {
+          // Mandatory column
+          $src = $row[$cols['src']];
+          // Optional grouping by category
+          if (isset($cols['cat'])) {
+            // Set category
+            $cat = empty($row[$cols['cat']]) ? '???' : $row[$cols['cat']];
+            // Optional custom name
+            if (!empty($row[$cols['key']])) {
+              $data[$cat]['sources'][$row[$cols['key']]] = $src;
+            } else {
+              $data[$cat]['sources'][] = $src;
+            }
           } else {
-            $data[$cat]['sources'][] = $src;
+            $data[] = $src;
           }
-        } else {
-          $data[] = $src;
         }
       }
-    }
-    
-    if (!empty($data)) {
-      self::_setConfig(array($conf => $data));
-      return true;
+
+      if (!empty($data)) {
+        self::_setConfig(array($conf => $data), FALSE);
+        return true;
+      }
     }
     
     return false;
@@ -110,11 +113,13 @@ class App_Config
   
   /**
    *
-   * @param array $config Multi-dimensional array
+   * @param array $config       Multi-dimensional array
+   * @param boolean $override   Override all?
    */
-  static protected function _setConfig(array $config)
+  static protected function _setConfig(array $config, $override = TRUE)
   {
-    self::$_config = array_merge(self::$_config, $config);
+    self::$_config = $override ? array_merge(self::$_config, $config) 
+                               : array_merge_recursive(self::$_config, $config);
   }
   
   /**
@@ -131,7 +136,7 @@ class App_Config
     // Root search
     $k = array_shift($keys);
     $opt = isset(self::$_config[$k]) ? self::$_config[$k] : null;
-    
+        
     // Iterative search
     foreach ($keys as $k) {
       if (!isset($opt[$k])) {

@@ -86,30 +86,33 @@ class App_Command_Digest extends Command
     // Default config
     $default = App_Registry::config()->get('app.news');
     
-    foreach (App_Registry::config()->get('feeds') as $name => $section) {
+    foreach (App_Registry::config()->get('feeds') as $section => $data) {
       
-      App_Registry::log()->info("Starting section $name...");
-      
-      // Optional filters
-      $max = App_Registry::utils()->getArrayValue($section, 'max', @$default['max']);
-      $int = App_Registry::utils()->getArrayValue($section, 'interval', @$default['interval']);
-      $tag = App_Registry::utils()->getArrayValue($section, 'tag', @$default['tag']);
+      App_Registry::log()->info("Starting section '$section'...");
       
       // Optional data
-      $tit = App_Registry::utils()->getArrayValue($section, 'title', @$default['title']);
-      $url = App_Registry::utils()->getArrayValue($section, 'url', @$default['url']);
-
+      $url = App_Registry::utils()->getArrayValue($data, 'url', @$default['url']);
+      
+      // Optional filters
+      $max = App_Registry::utils()->getArrayValue($data, 'max', @$default['max']);
+      $int = App_Registry::utils()->getArrayValue($data, 'interval', @$default['interval']);
+      $tag = App_Registry::utils()->getArrayValue($data, 'tag', @$default['tag']);
+      
       // Optional flags
-      $aut = App_Registry::utils()->getArrayValue($section, 'author', @$default['author']);
-      $dat = App_Registry::utils()->getArrayValue($section, 'date', @$default['date']);
+      $aut = App_Registry::utils()->getArrayValue($data, 'author', @$default['author']);
+      $dat = App_Registry::utils()->getArrayValue($data, 'date', @$default['date']);
       
       // Data
       $posts = array();
       $inc = 0;
       
       // Read feeds
-      foreach ($section['sources'] as $author => $src) {
+      foreach ($data['sources'] as $author => $src) {
         try {
+          // Allowing only one source... 
+          if (is_array($src)) {
+            $src = array_shift($src);
+          }
           // Structure "url@type" (type is optional)
           $src = explode('@', $src);
           $resp = App_Registry::service()->getRss($src[0], $tag, @$src[1]);
@@ -178,7 +181,7 @@ class App_Command_Digest extends Command
         }
         $this->results[self::TYPE_POST] .= App_Registry::view()->renderSection(
           $posts, 
-          $tit, 
+          $section, 
           $url ? App_Registry::service()->getBitlyUrl($url) : null,
           self::TYPE_POST
         );

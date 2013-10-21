@@ -20,13 +20,15 @@ SET time_zone = "+00:00";
 -- Database: `mydb`
 --
 
+CREATE DATABASE IF NOT EXISTS `social-digest-test`;
+
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `users`
 --
 
-CREATE TABLE IF NOT EXISTS `users` (
+CREATE TABLE IF NOT EXISTS `social-digest-test` . `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `blog` varchar(255) DEFAULT NULL,
@@ -39,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `blog`, `category`, `calendar`) VALUES
+INSERT INTO `social-digest-test` . `users` (`id`, `name`, `blog`, `category`, `calendar`) VALUES
 (1, 'El País', 'http://ep00.epimg.net/rss/elpais/portada.xml', 'Medis de comunicació tradicionals', ''),
 (2, 'El Mundo', 'http://estaticos.elmundo.es/elmundo/rss/portada.xml', 'Medis de comunicació tradicionals', NULL),
 (3, 'Festivos España', NULL, NULL, 'es.spain#holiday@group.v.calendar.google.com'),
