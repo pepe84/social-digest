@@ -29,6 +29,14 @@ class App_Service
     return $regexs;
   }
   
+  /**
+   * 
+   * @param string $url
+   * @param string $tag
+   * @param string $type
+   * @param int $count
+   * @return SimpleXMLElement
+   */
   public function getRss($url, $tag = null, $type = null, $count = 100)
   {
     // Try to discover type
@@ -75,6 +83,13 @@ class App_Service
     return App_Http::getRequest($url, App_Http::CONTENT_TYPE_XML);
   }
   
+  /**
+   * 
+   * @param string $search
+   * @param int $max
+   * @param string $type
+   * @return stdClass
+   */
   public function getTweets($search, $max, $type = 'recent')
   {
     // Twitter API v1.0 (deprecated!)
@@ -89,6 +104,13 @@ class App_Service
     return App_Http::getRequest($url, App_Http::CONTENT_TYPE_JSON);
   }
 
+  /**
+   * 
+   * @param string $cal
+   * @param DateTime $startDate
+   * @param DateTime $endDate
+   * @return stdClass
+   */
   public function getGoogleCalendarEvents($cal, $startDate, $endDate)
   {
     // Google Calendar API v3
@@ -106,6 +128,21 @@ class App_Service
     return App_Http::getRequest($url, App_Http::CONTENT_TYPE_JSON);
   }
 
+  /**
+   * 
+   * @param string $ics
+   * @param DateTime $startDate
+   * @param DateTime $endDate
+   * @return array
+   */
+  public function getIcalEvents($ics, $startDate, $endDate)
+  {
+    $ical = new \SG_iCalReader($ics);
+    $query = new \SG_iCal_Query();
+    
+    return $query->Between($ical, $startDate->getTimestamp(), $endDate->getTimestamp());
+  }
+  
   public function getBitlyUrl($url)
   {
     // Use bitly service to minimize and track url
