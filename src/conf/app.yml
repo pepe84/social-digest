@@ -75,7 +75,7 @@ app:
 db:
   # Connection
   conn:
-    dbname:   "mydb"
+    dbname:   "social-digest-test"
     user:     "tester"
     password: "secret"
     host:     "localhost"
