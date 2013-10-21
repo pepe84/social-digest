@@ -256,9 +256,18 @@ class App_Command_Digest extends Command
           $dateHour = date_format($event->startDate, 'H:i');
           // Using suffix to avoid key overriding
           $this->results[self::TYPE_EVENT][$dateDay][$dateHour . "#$count"] = 
-            ($event->allDay ? "" : "[{$dateHour}h] ") . 
-            "{$event->summary}" . ($event->location ? " » {$event->location}" : "") . 
-            ($event->link ? " - " . App_Registry::view()->renderLink(App_Registry::service()->getBitlyUrl($event->link)) : "");
+            App_Registry::view()->renderTag(
+              'div', 
+              ($event->allDay ? "" : "[{$dateHour}h] ") . "{$event->summary}",
+              array('class' => 'event-summary')
+            ) .
+            App_Registry::view()->renderTag(
+              'div', 
+              " » " . ($event->location ?: "???") . 
+              ($event->link ? " - " . App_Registry::view()->renderLink(App_Registry::service()->getBitlyUrl($event->link)) : ""), 
+              array('class' => 'event-location')
+            );
+          // Update suffix counter
           $count++;
           // Store days hashmap
           $this->_mapDate($event->startDate);
