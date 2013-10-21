@@ -225,36 +225,46 @@ class App_Command_Digest extends Command
   
   public function getEvents($today)
   {
-    App_Registry::log()->info("Obtaining GOOGLE CALENDAR events...");
+    App_Registry::log()->info("Obtaining EVENTS...");
     
     $count = 0;
     $int = App_Registry::config()->get('app.events.interval');
+    $end = App_Registry::utils()->getDateAdd($today, $int);
 
     foreach (App_Registry::config()->get('calendars') as $calendar) {
-
-      $end = App_Registry::utils()->getDateAdd($today, $int);
-      $resp = App_Registry::service()->getGoogleCalendarEvents($calendar, $today, $end);
-
-      if (!empty($resp)) {
-        if (!empty($resp->items)) {
-          foreach ($resp->items as $event) {
-            if (!empty($event->start)) {
-              $dateTime = isset($event->start->dateTime) ? $event->start->dateTime : $event->start->date;
-              $dateKey = date_format(new DateTime($dateTime), 'Y-m-d');
-              $hour = App_Registry::view()->renderDate($dateTime, false, true);
-              // Using suffix to avoid key overriding
-              $this->results[self::TYPE_EVENT][$dateKey][$hour . "#$count"] = "[{$hour}h] {$event->summary} - "
-                . App_Registry::view()->renderLink(App_Registry::service()->getBitlyUrl($event->htmlLink));
-              $count++;
-              // Store days hashmap
-              $this->_mapDate($dateTime);
-            }
-          }
+      
+      if (preg_match('/^(.+)\.ics(\?.+)?$/i', $calendar)) {
+        // iCalendar format
+        $items = App_Registry::service()->getIcalEvents($calendar, $today, $end);
+      } else {
+        // Google Calendar
+        $resp = App_Registry::service()->getGoogleCalendarEvents($calendar, $today, $end);
+        if (empty($resp)) {
+          App_Registry::log()->err("Unable to get events from $calendar (" . json_encode($resp) . ")");
+          continue;
         } else {
-          App_Registry::log()->debug("No events from $calendar");
+          $items = !empty($resp->items) ? $resp->items : array();
+        }
+      }
+      
+      if (!empty($items)) {
+        App_Registry::log()->info(count($items) . " events from $calendar");        
+        
+        foreach ($items as $event) {
+          $event = \App_Model_Event::factory($event);
+          $dateDay  = date_format($event->startDate, 'Y-m-d');
+          $dateHour = date_format($event->startDate, 'H:i');
+          // Using suffix to avoid key overriding
+          $this->results[self::TYPE_EVENT][$dateDay][$dateHour . "#$count"] = 
+            ($event->allDay ? "" : "[{$dateHour}h] ") . 
+            "{$event->summary}" . ($event->location ? " » {$event->location}" : "") . 
+            ($event->link ? " - " . App_Registry::view()->renderLink(App_Registry::service()->getBitlyUrl($event->link)) : "");
+          $count++;
+          // Store days hashmap
+          $this->_mapDate($event->startDate);
         }
       } else {
-        App_Registry::log()->err("Unable to get events from $calendar (" . json_encode($resp) . ")");
+        App_Registry::log()->debug("No events from $calendar");
       }
     }
   }
@@ -391,7 +401,7 @@ class App_Command_Digest extends Command
     $hash = $this->_getDateKey($date);
     
     if (!isset($this->_datesMap[$hash])) {
-      $this->_datesMap[$hash] = App_Registry::view()->renderDate($date, true, false, true);
+      $this->_datesMap[$hash] = App_Registry::view()->renderDate($date, TRUE, FALSE, TRUE);
     }
   }
 }

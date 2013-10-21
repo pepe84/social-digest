@@ -24,6 +24,7 @@ class App
     $loader->register();
     
     require_once __DIR__ . '/Swift/lib/swift_required.php';
+    require_once __DIR__ . '/SG-iCalendar/SG_iCal.php';
   }
   
   static public function run()
