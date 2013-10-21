@@ -4,6 +4,7 @@ Distributed digest system.
 
 ## Features ##
 
+* File and database configuration allowed
 * News sections using feed sources (RSS)
 * A common agenda using Google Calendar API
 * Recent tweets using Twitter API
@@ -21,6 +22,8 @@ There are two available commands (`run` and `mail`) that require a previous conf
 * `calendars.yml` file or `database` config: calendars list
 
 The app searches for configuration files at `/conf` folder by default. This path could be overridden setting a custom one, as described below at commands section, and is possible to store `feeds` / `calendars` lists in a database instead of using files. See `db` configuration at `app.yml` example file for more details.
+
+There is also an option to read feeds / calendars sources from a database. It requires to set up server connection and table columns configuration.
 
 The initial example files, at `/conf` folder, are a good start to see how to setup a custom app.
 
