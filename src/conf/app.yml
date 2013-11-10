@@ -7,6 +7,9 @@ app:
   title: "Notícies dels diaris"
   description: "Portada"
   
+  # Optional (see http://www.php.net/manual/en/timezones.php)
+  timezone: "Europe/Madrid"
+  
   # Calendar section
   # - url is optional
   events:
