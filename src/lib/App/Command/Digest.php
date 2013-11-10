@@ -41,6 +41,10 @@ class App_Command_Digest extends Command
     App_Registry::log()->setLogger($output);
     $style = App_Registry::config()->get('app.output.style.inline');
     App_Registry::view()->setInlineStyle($style ?: array());
+    $timezone = App_Registry::config()->get('app.timezone');
+    if (!empty($timezone)) {
+      date_default_timezone_set($timezone);
+    }
     
     // Execute
     $this->results = array();
