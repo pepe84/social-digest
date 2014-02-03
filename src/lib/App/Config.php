@@ -90,18 +90,14 @@ class App_Config
           if (isset($cols['cat'])) {
             // Set category
             $cat = empty($row[$cols['cat']]) ? '???' : $row[$cols['cat']];
-            // Optional custom name
-            if (!empty($row[$cols['key']])) {
-              $data[$cat]['sources'][$row[$cols['key']]] = $src;
-            } else {
-              $data[$cat]['sources'][] = $src;
-            }
+            // Optional custom name and mail delivery
+            self::_setNameAndMail($src, $cols, $row, $data[$cat]['sources']);
           } else {
-            $data[] = $src;
+            self::_setNameAndMail($src, $cols, $row, $data);
           }
         }
       }
-
+      
       if (!empty($data)) {
         self::_setConfig(array($conf => $data), FALSE);
         return true;
@@ -109,6 +105,20 @@ class App_Config
     }
     
     return false;
+  }
+
+  static protected function _setNameAndMail($src, $cols, $row, &$data) 
+  {
+    if (isset($cols['key']) && !empty($row[$cols['key']])) {
+      $custom = $row[$cols['key']];
+      // Optional mail delivery
+      if (isset($cols['mail']) && !empty($row[$cols['mail']])) {
+        $custom .= '<' . trim($row[$cols['mail']]) . '>';
+      }
+      $data[$custom] = $src;
+    } else {
+      $data[] = $src;
+    }
   }
   
   /**

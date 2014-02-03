@@ -3,5 +3,5 @@
 #############
 
 calendars:
-  - es.spain#holiday@group.v.calendar.google.com
-  - https://www.google.com/calendar/ical/spain__es%40holiday.calendar.google.com/public/basic.ics
+  "Festius GC": es.spain#holiday@group.v.calendar.google.com
+  "Festius ICAL <socialdigestholidays@mailinator.com>": https://www.google.com/calendar/ical/spain__es%40holiday.calendar.google.com/public/basic.ics

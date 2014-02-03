@@ -13,7 +13,7 @@ app:
   # Calendar section
   # - url is optional
   events:
-    enabled: 0
+    enabled: 1
     # Info
     title: "Agenda"
     # Filter
@@ -69,9 +69,9 @@ app:
     # list or to upload a new WP post (http://jetpack.me/support/post-by-email)
     # Note: If is enabled, full output is automatically disabled
     mail:
-      enabled: 0
-      from:   "u1@s1.me"
-      to:     "u2@s2.me"
+      enabled: 1
+      from:   "socialdigest@mailinator.com"
+      to:     "socialdigestest@mailinator.com"
       
 ###############################
 # Database sources (optional) #
@@ -97,6 +97,7 @@ db:
         cat:  "category"
         # Optional
         key:  "name"
+        mail: "mail"
     # Events sources
     calendars:
       table:  "users"

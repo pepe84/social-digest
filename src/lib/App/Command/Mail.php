@@ -49,18 +49,20 @@ class App_Command_Mail extends Command
     foreach (array('from', 'to', 'cc', 'bcc') as $header) {
       $address = App_Registry::config()->get("app.output.mail.$header");
       if (!empty($address)) {
-        $addresses[$header] = "$header:$address";
+        $addresses[$header] = "$header:" . (is_array($address) ? implode(',', $address) : $address);
       }
     }
     
     return $addresses;
   }
   
-  public function send(array $adresses = null)
-  {
+  public function send(array $addresses = array(), $includeConfAddresses = false)
+  { 
     // Use config?
-    if (empty($adresses)) {
-      $adresses = $this->getAddresses();
+    $groups[] = $addresses;
+    
+    if ($includeConfAddresses) {
+      $groups[] = $this->getAddresses();
     }
     
     // Prepare delivery
@@ -73,21 +75,23 @@ class App_Command_Mail extends Command
         (App_Registry::config()->get('app.output.mail.append') ?: ""), 
       'text/html'
     );
-    
+        
     // Adresses
     $log = array();
     
-    foreach ($adresses as $subaddresses) {
-      if (!empty($subaddresses)) {
-        // Split header
-        list($header, $list) = explode(':', $subaddresses);
-        $log[$header] = $list;
-        // Split addresses
-        $list = explode(',', $list);
-        array_walk($list, 'trim');
-        // Add to message
-        $method = 'set' . ucfirst($header);
-        $message->{$method}($list);
+    foreach ($groups as $group) {
+      foreach ($group as $subaddresses) {
+        if (!empty($subaddresses)) {
+          // Split header
+          list($header, $list) = explode(':', $subaddresses);
+          $log[$header][] = $list;
+          // Split addresses
+          $list = explode(',', $list);
+          array_walk($list, 'trim');
+          // Add to message
+          $method = 'set' . ucfirst($header);
+          $message->{$method}($list);
+        }
       }
     }
     
