@@ -13,6 +13,7 @@ class App_Command_Digest extends Command
   
   protected $_datesMap = array();
   protected $_results = array();
+  protected $_mailAddresses = array();
   
   protected function configure()
   {
@@ -132,6 +133,15 @@ class App_Command_Digest extends Command
           if (is_numeric($author)) {
             $elem = $resp->channel->title ?: $resp->title ?: "";
             $author = trim("{$elem}") ?: App_Registry::utils()->t("No author");
+          } else {
+            // Parse mail
+            $matches = array();
+            if (preg_match('/^(.+)<(.+\@.+\..+)>$/i', $author, $matches)) {
+              // Remove it from name
+              $author = $matches[1];
+              // Add it to addresses list (avoiding repeated ones)
+              $this->_mailAddresses[$matches[2]] = 'to:' . $matches[2];
+            }
           }
           // Parse feed
           foreach ($resp->channel->item ?: $resp->entry ?: array() as $post) {
@@ -400,7 +410,7 @@ class App_Command_Digest extends Command
   public function sendMail()
   {
     $command = new App_Command_Mail();
-    $command->send();
+    $command->send($this->_mailAddresses, true);
   }
   
   protected function _getDateKey($date)

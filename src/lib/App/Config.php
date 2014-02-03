@@ -91,8 +91,13 @@ class App_Config
             // Set category
             $cat = empty($row[$cols['cat']]) ? '???' : $row[$cols['cat']];
             // Optional custom name
-            if (!empty($row[$cols['key']])) {
-              $data[$cat]['sources'][$row[$cols['key']]] = $src;
+            if (isset($cols['key']) && !empty($row[$cols['key']])) {
+              $custom = $row[$cols['key']];
+              // Optional mail delivery
+              if (isset($cols['mail']) && !empty($row[$cols['mail']])) {
+                $custom .= '<' . trim($row[$cols['mail']]) . '>';
+              }
+              $data[$cat]['sources'][$custom] = $src;
             } else {
               $data[$cat]['sources'][] = $src;
             }

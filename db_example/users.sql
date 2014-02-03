@@ -31,6 +31,7 @@ CREATE DATABASE IF NOT EXISTS `social-digest-test`;
 CREATE TABLE IF NOT EXISTS `social-digest-test` . `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
+  `mail` varchar(255) DEFAULT NULL,
   `blog` varchar(255) DEFAULT NULL,
   `category` varchar(255) DEFAULT NULL,
   `calendar` varchar(255) DEFAULT NULL,
@@ -41,12 +42,12 @@ CREATE TABLE IF NOT EXISTS `social-digest-test` . `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `social-digest-test` . `users` (`id`, `name`, `blog`, `category`, `calendar`) VALUES
-(1, 'El País', 'http://ep00.epimg.net/rss/elpais/portada.xml', 'Medis de comunicació tradicionals', ''),
-(2, 'El Mundo', 'http://estaticos.elmundo.es/elmundo/rss/portada.xml', 'Medis de comunicació tradicionals', NULL),
-(3, 'Festivos España', NULL, NULL, 'es.spain#holiday@group.v.calendar.google.com'),
-(4, 'Setmanari La Directa', 'http://directa.cat/rss/noticies', 'Medis de comunicació alternatius', NULL),
-(5, 'La Marea', 'http://feeds.feedburner.com/lamarea/jUvB', NULL, NULL);
+INSERT INTO `social-digest-test` . `users` (`id`, `name`, `mail`, `blog`, `category`, `calendar`) VALUES
+(1, 'El País', NULL, 'http://ep00.epimg.net/rss/elpais/portada.xml', 'Medis de comunicació tradicionals', ''),
+(2, 'El Mundo', 'socialdigest1@mailinator.com', 'http://estaticos.elmundo.es/elmundo/rss/portada.xml', 'Medis de comunicació tradicionals', NULL),
+(3, 'Festivos España', NULL, NULL, NULL, 'es.spain#holiday@group.v.calendar.google.com'),
+(4, 'Setmanari La Directa', 'socialdigest2@mailinator.com', 'http://directa.cat/rss/noticies', 'Medis de comunicació alternatius', NULL),
+(5, 'La Marea', NULL, 'http://feeds.feedburner.com/lamarea/jUvB', NULL, NULL);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
