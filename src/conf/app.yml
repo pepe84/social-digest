@@ -13,7 +13,7 @@ app:
   # Calendar section
   # - url is optional
   events:
-    enabled: 0
+    enabled: 1
     # Info
     title: "Agenda"
     # Filter

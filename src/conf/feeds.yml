@@ -13,7 +13,7 @@ feeds:
       "El Punt Avui": http://www.elpuntavui.cat/barcelona/nacional/portada/portada/pais.feed?limitstart=&type=rss
   "Medis de comunicació alternatius":
     sources:
-      "Setmanari La Directa": http://directa.cat/rss/noticies
+      "Setmanari La Directa <socialdigestdirecta@mailinator.com>": http://directa.cat/rss/noticies
       "La Marea": http://feeds.feedburner.com/lamarea/jUvB
       "Periódico Diagonal": http://www.diagonalperiodico.net/rss/portada.xml
       "El Diario": http://www.eldiario.es/rss/

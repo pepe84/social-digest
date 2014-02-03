@@ -129,19 +129,12 @@ class App_Command_Digest extends Command
         if (!empty($resp)) {
           // Reset counter
           $count = 0;
-          // Get author from RSS information
+          // Get author from RSS information?
           if (is_numeric($author)) {
             $elem = $resp->channel->title ?: $resp->title ?: "";
             $author = trim("{$elem}") ?: App_Registry::utils()->t("No author");
           } else {
-            // Parse mail
-            $matches = array();
-            if (preg_match('/^(.+)<(.+\@.+\..+)>$/i', $author, $matches)) {
-              // Remove it from name
-              $author = $matches[1];
-              // Add it to addresses list (avoiding repeated ones)
-              $this->_mailAddresses[$matches[2]] = 'to:' . $matches[2];
-            }
+            $this->_parseNameAndStoreMail($author);
           }
           // Parse feed
           foreach ($resp->channel->item ?: $resp->entry ?: array() as $post) {
@@ -245,7 +238,11 @@ class App_Command_Digest extends Command
     $int = App_Registry::config()->get('app.events.interval');
     $end = App_Registry::utils()->getDateAdd($today, $int);
 
-    foreach (App_Registry::config()->get('calendars') as $calendar) {
+    foreach (App_Registry::config()->get('calendars') as $name => $calendar) {
+
+      if (!is_numeric($name)) {
+        $this->_parseNameAndStoreMail($name);
+      }
       
       if (preg_match('/^(.+)\.ics(\?.+)?$/i', $calendar)) {
         // iCalendar format
@@ -290,6 +287,19 @@ class App_Command_Digest extends Command
         App_Registry::log()->debug("No events from $calendar");
       }
     }
+  }
+
+  protected function _parseNameAndStoreMail(&$name)
+  {
+      // Parse mail
+      $matches = array();
+      
+      if (preg_match('/^(.+)<(.+\@.+\..+)>$/i', $name, $matches)) {
+        // Remove it from name
+        $name = $matches[1];
+        // Add it to addresses list (avoiding repeated ones)
+        $this->_mailAddresses[$matches[2]] = 'to:' . $matches[2];
+      }
   }
   
   public function render($title, $full)
