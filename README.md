@@ -4,10 +4,10 @@ Distributed digest system.
 
 ## Features ##
 
-* File and database configuration allowed
-* News sections using feed sources (RSS)
-* A common agenda using Google Calendar API
-* Recent tweets using Twitter API
+* File or database configuration
+* News' sections using feed sources (RSS)
+* A common agenda supporting iCalendar (.ics) and Google Calendar API
+* Recent tweets using Twitter API -currently deprecated-
 * Short urls using Bitly API
 * Filters such as max results, interval time or custom tags
 * Custom CSS style (inline or file)
