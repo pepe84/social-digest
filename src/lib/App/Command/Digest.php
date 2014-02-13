@@ -298,7 +298,7 @@ class App_Command_Digest extends Command
         // Remove it from name
         $name = $matches[1];
         // Add it to addresses list (avoiding repeated ones)
-        $this->_mailAddresses[$matches[2]] = 'to:' . $matches[2];
+        $this->_mailAddresses[$matches[2]] = $matches[2];
       }
   }
   
@@ -420,7 +420,7 @@ class App_Command_Digest extends Command
   public function sendMail()
   {
     $command = new App_Command_Mail();
-    $command->send($this->_mailAddresses, true);
+    $command->send(array('bcc' => $this->_mailAddresses), true);
   }
   
   protected function _getDateKey($date)

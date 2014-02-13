@@ -36,33 +36,28 @@ class App_Command_Mail extends Command
     App_Registry::output()->init($filename);
     App_Registry::log()->setLogger($output);
     
+    // Split header and addresses
+    $data = $input->getArgument('addresses');
+    
+    foreach ($data as $subdata) {
+      list($header, $mails) = explode(':', $subdata);
+      $mailsArray = explode(',', $mails);
+      array_walk($mailsArray, 'trim');
+      $addresses[$header] = $mailsArray;
+    }
+    
     // Execute
-    $this->send($input->getArgument('addresses'));
+    $this->send($addresses);
   }
   
   // Aux methods
   
-  public function getAddresses()
-  {
-    $addresses = array();
-    
-    foreach (array('from', 'to', 'cc', 'bcc') as $header) {
-      $address = App_Registry::config()->get("app.output.mail.$header");
-      if (!empty($address)) {
-        $addresses[$header] = "$header:" . (is_array($address) ? implode(',', $address) : $address);
-      }
-    }
-    
-    return $addresses;
-  }
-  
   public function send(array $addresses = array(), $includeConfAddresses = false)
   { 
     // Use config?
-    $groups[] = $addresses;
-    
     if ($includeConfAddresses) {
-      $groups[] = $this->getAddresses();
+      $conf = App_Registry::config()->get("app.output.mail");
+      $this->mergeAddresses($addresses, $conf);
     }
     
     // Prepare delivery
@@ -79,20 +74,11 @@ class App_Command_Mail extends Command
     // Adresses
     $log = array();
     
-    foreach ($groups as $group) {
-      foreach ($group as $subaddresses) {
-        if (!empty($subaddresses)) {
-          // Split header
-          list($header, $list) = explode(':', $subaddresses);
-          $log[$header][] = $list;
-          // Split addresses
-          $list = explode(',', $list);
-          array_walk($list, 'trim');
-          // Add to message
-          $method = 'set' . ucfirst($header);
-          $message->{$method}($list);
-        }
-      }
+    foreach ($addresses as $header => $mails) {
+      // Add to message
+      $method = 'set' . ucfirst($header);
+      $message->{$method}($mails);
+      $log[$header] = implode (', ', $mails);
     }
     
     // Send e-mail
@@ -105,4 +91,19 @@ class App_Command_Mail extends Command
       App_Registry::log()->err("Message delivery failed.");
     }    
   }  
+  
+  
+  public function mergeAddresses(array &$data1, array $data2)
+  {
+    foreach (array('from', 'to', 'cc', 'bcc') as $header) {
+      if (!empty($data2[$header])) {
+        if (isset($data1[$header])) {
+          $data1[$header] = array_merge($data1[$header], $data2[$header]);
+        } else {
+          $data1[$header] = $data2[$header];
+        }
+      }
+    }
+  }
+
 }

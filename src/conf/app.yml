@@ -70,8 +70,15 @@ app:
     # Note: If is enabled, full output is automatically disabled
     mail:
       enabled: 1
-      from:   "socialdigest@mailinator.com"
-      to:     "socialdigestest@mailinator.com"
+      from:
+        - "socialdigest@mailinator.com"
+      to:
+        - "socialdigestest1@mailinator.com"
+        - "socialdigestest2@mailinator.com"
+      cc:
+        - "socialdigestestcc@mailinator.com"
+      bcc:
+        - "socialdigestestcco@mailinator.com"
       
 ###############################
 # Database sources (optional) #
